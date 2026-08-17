@@ -1,12 +1,23 @@
+import java.util.Objects;
+import java.util.Scanner;
+
 public class Remy {
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         String banner = getBannerMessage();
         String greetMsg = getGreetMessage();
         String exitMsg = getExitMessage();
 
         System.out.println(banner);
         System.out.println(greetMsg);
+        String message = scanner.nextLine();
+        while (!message.equals("bye")) {
+            System.out.println(echoMessage(message));
+            message = scanner.nextLine();
+        }
         System.out.println(exitMsg);
+
+        scanner.close();
     }
 
     public static String getBannerMessage() {
@@ -27,12 +38,20 @@ public class Remy {
               "Hello! I'm Remy.\n"
             + "What can I do for you?\n"
             + "\n"
-            + "____________________________________________________________";
+            + "____________________________________________________________\n";
     }
 
     public static String getExitMessage() {
         return
-                  "Bye. Hope to see you again soon!\n"
-                + "____________________________________________________________";
+                  "____________________________________________________________\n"
+                + "Bye. Hope to see you again soon!\n"
+                + "____________________________________________________________\n";
+    }
+
+    public static String echoMessage(String msg) {
+        return
+                  "____________________________________________________________\n"
+                + msg + "\n"
+                + "____________________________________________________________\n";
     }
 }
