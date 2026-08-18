@@ -2,7 +2,7 @@ import java.util.Objects;
 import java.util.Scanner;
 
 public class Remy {
-    public static String[] messages = new String[100];
+    public static Task[] tasks = new Task[100];
     public static int nextFreePointer = 0;
 
     public static void main(String[] args) {
@@ -18,78 +18,116 @@ public class Remy {
         while (!message.equals("bye")) {
 
             if (message.equals("list")) {
-                listMessages();
+                listTasks();
+
+            } else if (message.startsWith("mark")) {
+                if (message.length() > 4) {
+                    String idx = message.substring(4).strip();
+                    int formattedIndex = Integer.parseInt(idx);
+                    markTaskAsDone(formattedIndex - 1);
+                }
+
+            } else if (message.startsWith("unmark")) {
+                if (message.length() > 6) {
+                    String idx = message.substring(6).strip();
+                    int formattedIndex = Integer.parseInt(idx);
+                    markTaskAsUndone(formattedIndex - 1);
+                }
+
             } else {
-                addMessage(message);
+                addTask(message);
             }
 
             message = scanner.nextLine();
         }
+        scanner.close();
 
         System.out.println(exitMsg);
-
-        scanner.close();
     }
 
     public static String getBannerMessage() {
         return
-                  "____________________________________________________________\n"
-                + " _____                      \n"
-                + "|  __ \\                     \n"
-                + "| |__) | ___ _ __ ___  _   _\n"
-                + "|  _  / / _ \\ '_ ` _ \\| | | |\n"
-                + "| | \\ \\|  __/ | | | | | |_| |\n"
-                + "|_|  \\_\\\\___|_| |_| |_|\\__, |\n"
-                + "                        __/ |\n"
-                + "                       |___/ \n";
+                """
+                        ____________________________________________________________
+                         _____                     \s
+                        |  __ \\                    \s
+                        | |__) | ___ _ __ ___  _   _
+                        |  _  / / _ \\ '_ ` _ \\| | | |
+                        | | \\ \\|  __/ | | | | | |_| |
+                        |_|  \\_\\\\___|_| |_| |_|\\__, |
+                                                __/ |
+                                               |___/\s
+                        """;
     }
 
     public static String getGreetMessage() {
         return
-              "Hello! I'm Remy.\n"
-            + "What can I do for you?\n"
-            + "\n"
-            + "____________________________________________________________\n";
+                """
+                        Hello! I'm Remy.
+                        What can I do for you?
+                        
+                        ____________________________________________________________
+                        """;
     }
 
     public static String getExitMessage() {
         return
-                  "____________________________________________________________\n"
-                + "Bye. Hope to see you again soon!\n"
-                + "____________________________________________________________\n";
+                """
+                        ____________________________________________________________
+                        Bye. Hope to see you again soon!
+                        ____________________________________________________________
+                        """;
     }
 
-    public static String echoMessage(String msg) {
-        return
-                  "____________________________________________________________\n"
-                + msg + "\n"
-                + "____________________________________________________________\n";
-    }
-
-    public static void addMessage(String message) {
+    public static void addTask(String taskDescription) {
         if (nextFreePointer >= 100) {
             return;
         }
-        messages[nextFreePointer] = message;
+
+        Task newTask = new Task(taskDescription);
+        tasks[nextFreePointer] = newTask;
         nextFreePointer++;
         String result =
                   "____________________________________________________________\n"
-                + "added: " + message + "\n"
+                + "added: " + newTask.description + "\n"
                 + "____________________________________________________________\n";
-
 
         System.out.println(result);
     }
 
-    public static void listMessages() {
+    public static void markTaskAsDone(int index) {
+        if (index >= nextFreePointer) {
+            return;
+        }
+
+        tasks[index].markAsDone();
+        System.out.println("____________________________________________________________\n");
+        System.out.println(" Nice! I've marked this task as done:\n");
+        System.out.println(tasks[index]);
+        System.out.println("____________________________________________________________\n");
+    }
+
+    public static void markTaskAsUndone(int index) {
+        if (index >= nextFreePointer) {
+            return;
+        }
+
+        tasks[index].markAsUndone();
+        System.out.println("____________________________________________________________\n");
+        System.out.println(" OK, I've marked this task as not done yet:\n");
+        System.out.println(tasks[index]);
+        System.out.println("____________________________________________________________\n");
+    }
+
+    public static void listTasks() {
         System.out.println("____________________________________________________________\n");
 
-        for (int index = 0; index < messages.length; index++) {
-            if (messages[index] == null) {
+        for (int index = 0; index < tasks.length; index++) {
+            if (tasks[index] == null) {
                 break;
             }
 
-            System.out.println((index + 1) + ". " + messages[index]);
+            System.out.println((index + 1) + ". " + tasks[index]);
         }
 
         System.out.println("____________________________________________________________\n");
