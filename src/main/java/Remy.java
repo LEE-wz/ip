@@ -101,10 +101,6 @@ public class Remy {
         }
 
         tasks[index].markAsDone();
-        System.out.println("____________________________________________________________\n");
-        System.out.println(" Nice! I've marked this task as done:\n");
-        System.out.println(tasks[index]);
-        System.out.println("____________________________________________________________\n");
     }
 
     public static void markTaskAsUndone(int index) {
@@ -113,10 +109,6 @@ public class Remy {
         }
 
         tasks[index].markAsUndone();
-        System.out.println("____________________________________________________________\n");
-        System.out.println(" OK, I've marked this task as not done yet:\n");
-        System.out.println(tasks[index]);
-        System.out.println("____________________________________________________________\n");
     }
 
     public static void listTasks() {
