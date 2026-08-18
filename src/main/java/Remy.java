@@ -34,6 +34,33 @@ public class Remy {
                     markTaskAsUndone(formattedIndex - 1);
                 }
 
+            } else if (message.startsWith("todo")) {
+                String[] messageSplit = message.split("/", 0);
+                if (messageSplit.length == 1) {
+                    String description = messageSplit[0].substring(4).strip();
+                    Todo newTodo = new Todo(description);
+                    addTask2(newTodo);
+                }
+
+            } else if (message.startsWith("deadline")) {
+                String[] messageSplit = message.split("/", 0);
+                if (messageSplit.length == 2) {
+                    String description = messageSplit[0].substring(8).strip();
+                    String by = messageSplit[1].substring(2).strip();
+                    Deadline newDeadline = new Deadline(description, by);
+                    addTask2(newDeadline);
+                }
+
+            } else if (message.startsWith("event")) {
+                String[] messageSplit = message.split("/", 0);
+                if (messageSplit.length == 3) {
+                    String description = messageSplit[0].substring(5).strip();
+                    String by = messageSplit[1].substring(2).strip();
+                    String end = messageSplit[2].substring(3).strip();
+                    Event newEvent = new Event(description, by, end);
+                    addTask2(newEvent);
+                }
+
             } else {
                 addTask(message);
             }
@@ -90,6 +117,23 @@ public class Remy {
         String result =
                   "____________________________________________________________\n"
                 + "added: " + newTask.description + "\n"
+                + "____________________________________________________________\n";
+
+        System.out.println(result);
+    }
+
+    public static void addTask2(Task task) {
+        if (nextFreePointer >= 100) {
+            return;
+        }
+
+        tasks[nextFreePointer] = task;
+        nextFreePointer++;
+        String result =
+                  "____________________________________________________________\n"
+                + "Got it. I've added this task:\n"
+                + task + "\n"
+                + "Now you have " + (nextFreePointer - 1) + " tasks in the list.\n"
                 + "____________________________________________________________\n";
 
         System.out.println(result);
