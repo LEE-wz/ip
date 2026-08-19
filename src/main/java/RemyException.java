@@ -5,17 +5,18 @@ public class RemyException extends RuntimeException{
     }
 
     public RemyException(boolean hasDescription) {
-        String message = "Bruh :/, you need to fill in the description of your todo task, unless you're doing nothing :/.\n";
-
+        String message = "____________________________________________________________\n";
+        message += "Bruh :/, you need to fill in the description of your todo task, unless you're doing nothing :/.\n";
         message += "\nYour todo task should look something like this, please don't mess it up again -_-: \n";
-
-        message += "todo borrow book";
+        message += "todo borrow book\n";
+        message += "____________________________________________________________\n";
 
         super(message);
     }
 
     public RemyException(boolean hasDescription, boolean hasDeadline) {
-        String message = "Bruh :/, your deadline task is missing the following: \n";
+        String message = "____________________________________________________________\n";
+        message += "Bruh :/, your deadline task is missing the following: \n";
 
         if (!hasDescription) {
             message += "- description. \n";
@@ -26,14 +27,15 @@ public class RemyException extends RuntimeException{
         }
 
         message += "\nYour deadline task should look something like this, please don't mess it up again -_-: \n";
-
-        message += "deadline return book /by Sunday";
+        message += "deadline return book /by Sunday\n";
+        message += "____________________________________________________________\n";
 
         super(message);
     }
 
     public RemyException(boolean hasDescription, boolean hasStart, boolean hasEnd) {
-        String message = "Bruh :/, your event task is missing the following: \n";
+        String message = "____________________________________________________________\n";
+        message += "Bruh :/, your event task is missing the following: \n";
 
         if (!hasDescription) {
             message += "- description. \n";
@@ -48,8 +50,9 @@ public class RemyException extends RuntimeException{
         }
 
         message += "\nYour event task should look something like this, please don't mess it up again -_-: \n";
+        message += "event project meeting /from Mon 2pm /to 4pm\n";
+        message += "____________________________________________________________\n";
 
-        message += "event project meeting /from Mon 2pm /to 4pm";
 
         super(message);
     }
