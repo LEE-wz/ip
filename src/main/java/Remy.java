@@ -15,54 +15,98 @@ public class Remy {
         System.out.println(greetMsg);
 
         String message = scanner.nextLine();
-        while (!message.equals("bye")) {
+        while (true) {
+            try {
+                if (message.equals("bye")) {
+                    break;
 
-            if (message.equals("list")) {
-                listTasks();
+                } else if (message.equals("list")) {
+                    listTasks();
 
-            } else if (message.startsWith("mark")) {
-                if (message.length() > 4) {
-                    String idx = message.substring(4).strip();
-                    int formattedIndex = Integer.parseInt(idx);
-                    markTaskAsDone(formattedIndex - 1);
-                }
+                } else if (message.startsWith("mark")) {
+                    if (message.length() > 4) {
+                        String idx = message.substring(4).strip();
+                        int formattedIndex = Integer.parseInt(idx);
+                        markTaskAsDone(formattedIndex - 1);
+                    }
 
-            } else if (message.startsWith("unmark")) {
-                if (message.length() > 6) {
-                    String idx = message.substring(6).strip();
-                    int formattedIndex = Integer.parseInt(idx);
-                    markTaskAsUndone(formattedIndex - 1);
-                }
+                } else if (message.startsWith("unmark")) {
+                    if (message.length() > 6) {
+                        String idx = message.substring(6).strip();
+                        int formattedIndex = Integer.parseInt(idx);
+                        markTaskAsUndone(formattedIndex - 1);
+                    }
 
-            } else if (message.startsWith("todo")) {
-                String[] messageSplit = message.split("/", 0);
-                if (messageSplit.length == 1) {
-                    String description = messageSplit[0].substring(4).strip();
+                } else if (message.startsWith("todo")) {
+                    if (message.strip().length() == 4) {
+                        throw new RemyException(false);
+                    }
+
+                    String description = message.substring(4);
                     Todo newTodo = new Todo(description);
                     addTask(newTodo);
-                }
 
-            } else if (message.startsWith("deadline")) {
-                String[] messageSplit = message.split("/", 0);
-                if (messageSplit.length == 2) {
+                } else if (message.startsWith("deadline")) {
+                    if (message.length() == 8) {
+                        throw new RemyException(false, false);
+                    }
+
+                    String[] messageSplit = message.split("/by", 0);
+                    if (messageSplit.length == 1) {
+                        throw new RemyException(true, false);
+                    }
+
                     String description = messageSplit[0].substring(8).strip();
-                    String by = messageSplit[1].substring(2).strip();
-                    Deadline newDeadline = new Deadline(description, by);
+                    String deadline = messageSplit[1].strip();
+
+                    boolean missingDescription = description.isEmpty();
+                    boolean missingDeadline = deadline.isEmpty();
+
+                    if (missingDescription || missingDeadline) {
+                        throw new RemyException(!missingDescription, !missingDeadline);
+                    }
+
+                    Deadline newDeadline = new Deadline(description, deadline);
                     addTask(newDeadline);
-                }
 
-            } else if (message.startsWith("event")) {
-                String[] messageSplit = message.split("/", 0);
-                if (messageSplit.length == 3) {
+                } else if (message.startsWith("event")) {
+                    if (message.length() == 5) {
+                        throw new RemyException(false, false, false);
+                    }
+
+                    String[] messageSplit = message.split("/from|/to", 0);
+                    if (messageSplit.length == 1) {
+                        throw new RemyException(true, false, false);
+                    }
+
                     String description = messageSplit[0].substring(5).strip();
-                    String by = messageSplit[1].substring(2).strip();
-                    String end = messageSplit[2].substring(3).strip();
-                    Event newEvent = new Event(description, by, end);
+                    boolean missingDescription = description.isEmpty();
+
+                    if (messageSplit.length == 2) {
+                        boolean containsFrom = message.contains("/from");
+                        boolean containsTo = message.contains("/to");
+                        throw new RemyException(!missingDescription, containsFrom, containsTo);
+                    }
+
+                    String start = messageSplit[1].strip();
+                    String end = messageSplit[2].strip();
+
+                    boolean missingStart = start.isEmpty();
+                    boolean missingEnd = end.isEmpty();
+
+                    if (missingDescription || missingStart || missingEnd) {
+                        throw new RemyException(!missingDescription, !missingStart, !missingEnd);
+                    }
+
+                    Event newEvent = new Event(description, start, end);
                     addTask(newEvent);
+
+                } else {
+                    throw new RemyException();
                 }
 
-            } else {
-                continue;
+            } catch (RemyException e) {
+                System.out.println(e.getMessage());
             }
 
             message = scanner.nextLine();
