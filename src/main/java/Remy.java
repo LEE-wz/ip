@@ -8,11 +8,9 @@ public class Remy {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        String banner = getBannerMessage();
         String greetMsg = getGreetMessage();
         String exitMsg = getExitMessage();
 
-        System.out.println(banner);
         System.out.println(greetMsg);
 
         String message = scanner.nextLine();
@@ -54,7 +52,7 @@ public class Remy {
         System.out.println(exitMsg);
     }
 
-    public static String getBannerMessage() {
+    public static String getGreetMessage() {
         return
                 """
                         ____________________________________________________________
@@ -66,12 +64,6 @@ public class Remy {
                         |_|  \\_\\\\___|_| |_| |_|\\__, |
                                                 __/ |
                                                |___/\s
-                        """;
-    }
-
-    public static String getGreetMessage() {
-        return
-                """
                         Hello! I'm Remy.
                         What can I do for you?
                         
