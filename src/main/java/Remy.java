@@ -1,9 +1,9 @@
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Remy {
-    public static Task[] tasks = new Task[100];
-    public static int nextFreePointer = 0;
+    public static ArrayList<Task> tasks2 = new ArrayList<>();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -94,11 +94,11 @@ public class Remy {
             throw new RemyException("you have to put an integer :0");
         }
 
-        if (formattedIndex >= nextFreePointer + 1 || formattedIndex < 1) {
+        if (formattedIndex > tasks2.size() || formattedIndex < 1) {
             throw new RemyException("your index is out of range :/");
         }
 
-        tasks[formattedIndex - 1].markAsDone();
+        tasks2.get(formattedIndex - 1).markAsDone();
     }
 
     public static void markTaskAsUndone(String message) {
@@ -115,25 +115,20 @@ public class Remy {
             throw new RemyException("you have to put an integer :0");
         }
 
-        if (formattedIndex >= nextFreePointer + 1 || formattedIndex < 1) {
+        if (formattedIndex > tasks2.size() || formattedIndex < 1) {
             throw new RemyException("your index is out of range :/");
         }
 
-        tasks[formattedIndex - 1].markAsUndone();
+        tasks2.get(formattedIndex - 1).markAsUndone();
     }
 
     public static void addTask(Task task) {
-        if (nextFreePointer >= 100) {
-            return;
-        }
-
-        tasks[nextFreePointer] = task;
-        nextFreePointer++;
+        tasks2.add(task);
         String result =
                 "____________________________________________________________\n"
                         + "Got it. I've added this task:\n"
                         + task + "\n"
-                        + "Now you have " + (nextFreePointer) + " tasks in the list.\n"
+                        + "Now you have " + (tasks2.size()) + " tasks in the list.\n"
                         + "____________________________________________________________\n";
 
         System.out.println(result);
@@ -209,19 +204,15 @@ public class Remy {
     public static void listTasks() {
         System.out.println("____________________________________________________________\n");
 
-        for (int index = 0; index < tasks.length; index++) {
-            if (tasks[index] == null) {
-                break;
-            }
-
-            System.out.println((index + 1) + ". " + tasks[index]);
+        for (Task task : tasks2) {
+            System.out.println((tasks2.indexOf(task) + 1) + ". " + task);
         }
 
         System.out.println("____________________________________________________________\n");
     }
 
     public static void deleteTask(String message) {
-        if (nextFreePointer <= 0) {
+        if (tasks2.isEmpty()) {
             throw new RemyException("There is no task for you to delete LOL.");
         }
 
@@ -238,24 +229,19 @@ public class Remy {
             throw new RemyException("you have to put an integer :0");
         }
 
-        if (formattedIndex >= nextFreePointer + 1 || formattedIndex < 1) {
+        if (formattedIndex > tasks2.size() || formattedIndex < 1) {
             throw new RemyException("your index is out of range :/");
         }
 
-        Task taskToDelete = tasks[formattedIndex - 1];
+        Task taskToDelete = tasks2.get(formattedIndex - 1);
 
-        for (int i = formattedIndex - 1; i < nextFreePointer; i++) {
-            tasks[i] = tasks[i + 1];
-        }
-
-        tasks[nextFreePointer - 1] = null;
-        nextFreePointer--;
+        tasks2.remove(taskToDelete);
 
         String result =
                 "____________________________________________________________\n"
                         + "Okay, I have helped you removed a task, remember to thank me:\n"
                         + taskToDelete + "\n"
-                        + "Now you have " + (nextFreePointer) + " tasks in the list. Good luck LOL.\n"
+                        + "Now you have " + (tasks2.size()) + " tasks in the list. Good luck LOL.\n"
                         + "____________________________________________________________\n";
 
         System.out.println(result);
