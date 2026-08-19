@@ -1,9 +1,11 @@
 public class RemyException extends RuntimeException{
 
+    // Invalid keyword
     public RemyException() {
         super("Wha-? My bad bruh, I have no clue what you're talking about :/\n");
     }
 
+    // Invalid todo task
     public RemyException(boolean hasDescription) {
         String message = "____________________________________________________________\n";
         message += "Bruh :/, you need to fill in the description of your todo task, unless you're doing nothing :/.\n";
@@ -14,6 +16,7 @@ public class RemyException extends RuntimeException{
         super(message);
     }
 
+    // Invalid deadline task
     public RemyException(boolean hasDescription, boolean hasDeadline) {
         String message = "____________________________________________________________\n";
         message += "Bruh :/, your deadline task is missing the following: \n";
@@ -33,6 +36,7 @@ public class RemyException extends RuntimeException{
         super(message);
     }
 
+    // Invalid event task
     public RemyException(boolean hasDescription, boolean hasStart, boolean hasEnd) {
         String message = "____________________________________________________________\n";
         message += "Bruh :/, your event task is missing the following: \n";
