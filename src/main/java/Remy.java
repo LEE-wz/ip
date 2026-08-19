@@ -24,100 +24,19 @@ public class Remy {
                     listTasks();
 
                 } else if (message.startsWith("mark")) {
-                    if (message.strip().length() == 4) {
-                        throw new RemyException("you forgot which task to mark as done -_-.");
-                    }
-
-                    int formattedIndex;
-                    try {
-                        String idx = message.substring(4).strip();
-                        formattedIndex = Integer.parseInt(idx);
-
-                    } catch (NumberFormatException e) {
-                        throw new RemyException("you have to put an integer :0");
-                    }
-
-                    markTaskAsDone(formattedIndex - 1);
+                    markTaskAsDone(message);
 
                 } else if (message.startsWith("unmark")) {
-                    if (message.strip().length() == 6) {
-                        throw new RemyException("you forgot which task to unmark as undone -_-.");
-                    }
-
-                    int formattedIndex;
-                    try {
-                        String idx = message.substring(6).strip();
-                        formattedIndex = Integer.parseInt(idx);
-
-                    } catch (NumberFormatException e) {
-                        throw new RemyException("you have to put an integer :0");
-                    }
-
-                    markTaskAsUndone(formattedIndex - 1);
+                    markTaskAsUndone(message);
 
                 } else if (message.startsWith("todo")) {
-                    if (message.strip().length() == 4) {
-                        throw new RemyException(false);
-                    }
-
-                    String description = message.substring(4);
-                    Todo newTodo = new Todo(description);
-                    addTask(newTodo);
+                    addTodo(message);
 
                 } else if (message.startsWith("deadline")) {
-                    if (message.length() == 8) {
-                        throw new RemyException(false, false);
-                    }
-
-                    String[] messageSplit = message.split("/by", 0);
-                    if (messageSplit.length == 1) {
-                        throw new RemyException(true, false);
-                    }
-
-                    String description = messageSplit[0].substring(8).strip();
-                    String deadline = messageSplit[1].strip();
-
-                    boolean missingDescription = description.isEmpty();
-                    boolean missingDeadline = deadline.isEmpty();
-
-                    if (missingDescription || missingDeadline) {
-                        throw new RemyException(!missingDescription, !missingDeadline);
-                    }
-
-                    Deadline newDeadline = new Deadline(description, deadline);
-                    addTask(newDeadline);
+                    addDeadline(message);
 
                 } else if (message.startsWith("event")) {
-                    if (message.length() == 5) {
-                        throw new RemyException(false, false, false);
-                    }
-
-                    String[] messageSplit = message.split("/from|/to", 0);
-                    if (messageSplit.length == 1) {
-                        throw new RemyException(true, false, false);
-                    }
-
-                    String description = messageSplit[0].substring(5).strip();
-                    boolean missingDescription = description.isEmpty();
-
-                    if (messageSplit.length == 2) {
-                        boolean containsFrom = message.contains("/from");
-                        boolean containsTo = message.contains("/to");
-                        throw new RemyException(!missingDescription, containsFrom, containsTo);
-                    }
-
-                    String start = messageSplit[1].strip();
-                    String end = messageSplit[2].strip();
-
-                    boolean missingStart = start.isEmpty();
-                    boolean missingEnd = end.isEmpty();
-
-                    if (missingDescription || missingStart || missingEnd) {
-                        throw new RemyException(!missingDescription, !missingStart, !missingEnd);
-                    }
-
-                    Event newEvent = new Event(description, start, end);
-                    addTask(newEvent);
+                    addEvent(message);
 
                 } else {
                     throw new RemyException();
@@ -168,6 +87,49 @@ public class Remy {
                         """;
     }
 
+    public static void markTaskAsDone(String message) {
+
+        if (message.strip().length() == 4) {
+            throw new RemyException("you forgot which task to mark as done -_-.");
+        }
+
+        int formattedIndex;
+        try {
+            String idx = message.substring(4).strip();
+            formattedIndex = Integer.parseInt(idx);
+
+        } catch (NumberFormatException e) {
+            throw new RemyException("you have to put an integer :0");
+        }
+
+        if (formattedIndex >= nextFreePointer + 1 || formattedIndex < 1) {
+            throw new RemyException("your index is out of range :/");
+        }
+
+        tasks[formattedIndex - 1].markAsDone();
+    }
+
+    public static void markTaskAsUndone(String message) {
+        if (message.strip().length() == 6) {
+            throw new RemyException("you forgot which task to unmark as undone -_-.");
+        }
+
+        int formattedIndex;
+        try {
+            String idx = message.substring(6).strip();
+            formattedIndex = Integer.parseInt(idx);
+
+        } catch (NumberFormatException e) {
+            throw new RemyException("you have to put an integer :0");
+        }
+
+        if (formattedIndex >= nextFreePointer + 1 || formattedIndex < 1) {
+            throw new RemyException("your index is out of range :/");
+        }
+
+        tasks[formattedIndex - 1].markAsUndone();
+    }
+
     public static void addTask(Task task) {
         if (nextFreePointer >= 100) {
             return;
@@ -176,29 +138,80 @@ public class Remy {
         tasks[nextFreePointer] = task;
         nextFreePointer++;
         String result =
-                  "____________________________________________________________\n"
-                + "Got it. I've added this task:\n"
-                + task + "\n"
-                + "Now you have " + (nextFreePointer - 1) + " tasks in the list.\n"
-                + "____________________________________________________________\n";
+                "____________________________________________________________\n"
+                        + "Got it. I've added this task:\n"
+                        + task + "\n"
+                        + "Now you have " + (nextFreePointer - 1) + " tasks in the list.\n"
+                        + "____________________________________________________________\n";
 
         System.out.println(result);
     }
 
-    public static void markTaskAsDone(int index) {
-        if (index >= nextFreePointer || index < 0) {
-            throw new RemyException("your index is out of range :/");
+    public static void addTodo(String message) {
+        if (message.strip().length() == 4) {
+            throw new RemyException(false);
         }
 
-        tasks[index].markAsDone();
+        String description = message.substring(4);
+        Todo newTodo = new Todo(description);
+        addTask(newTodo);
     }
 
-    public static void markTaskAsUndone(int index) {
-        if (index >= nextFreePointer || index < 0) {
-            throw new RemyException("your index is out of range :/");
+    public static void addDeadline(String message) {
+        if (message.length() == 8) {
+            throw new RemyException(false, false);
         }
 
-        tasks[index].markAsUndone();
+        String[] messageSplit = message.split("/by", 0);
+        if (messageSplit.length == 1) {
+            throw new RemyException(true, false);
+        }
+
+        String description = messageSplit[0].substring(8).strip();
+        String deadline = messageSplit[1].strip();
+
+        boolean missingDescription = description.isEmpty();
+        boolean missingDeadline = deadline.isEmpty();
+
+        if (missingDescription || missingDeadline) {
+            throw new RemyException(!missingDescription, !missingDeadline);
+        }
+
+        Deadline newDeadline = new Deadline(description, deadline);
+        addTask(newDeadline);
+    }
+
+    public static void addEvent(String message) {
+        if (message.length() == 5) {
+            throw new RemyException(false, false, false);
+        }
+
+        String[] messageSplit = message.split("/from|/to", 0);
+        if (messageSplit.length == 1) {
+            throw new RemyException(true, false, false);
+        }
+
+        String description = messageSplit[0].substring(5).strip();
+        boolean missingDescription = description.isEmpty();
+
+        if (messageSplit.length == 2) {
+            boolean containsFrom = message.contains("/from");
+            boolean containsTo = message.contains("/to");
+            throw new RemyException(!missingDescription, containsFrom, containsTo);
+        }
+
+        String start = messageSplit[1].strip();
+        String end = messageSplit[2].strip();
+
+        boolean missingStart = start.isEmpty();
+        boolean missingEnd = end.isEmpty();
+
+        if (missingDescription || missingStart || missingEnd) {
+            throw new RemyException(!missingDescription, !missingStart, !missingEnd);
+        }
+
+        Event newEvent = new Event(description, start, end);
+        addTask(newEvent);
     }
 
     public static void listTasks() {
