@@ -7,6 +7,7 @@ public class Remy {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+
         String banner = getBannerMessage();
         String greetMsg = getGreetMessage();
         String exitMsg = getExitMessage();
@@ -15,35 +16,35 @@ public class Remy {
         System.out.println(greetMsg);
 
         String message = scanner.nextLine();
+        boolean stop = false;
         while (true) {
             try {
-                if (message.equals("bye")) {
-                    break;
+                switch (message) {
+                    case null -> throw new RemyException("You didn't type anything bruh D:");
 
-                } else if (message.equals("list")) {
-                    listTasks();
+                    case String msg when msg.equals("bye") -> stop = true;
 
-                } else if (message.startsWith("mark")) {
-                    markTaskAsDone(message);
+                    case String msg when msg.equals("list") -> listTasks();
 
-                } else if (message.startsWith("unmark")) {
-                    markTaskAsUndone(message);
+                    case String msg when msg.startsWith("mark") -> markTaskAsDone(msg);
 
-                } else if (message.startsWith("todo")) {
-                    addTodo(message);
+                    case String msg when msg.startsWith("unmark") -> markTaskAsUndone(msg);
 
-                } else if (message.startsWith("deadline")) {
-                    addDeadline(message);
+                    case String msg when msg.startsWith("todo") -> addTodo(msg);
 
-                } else if (message.startsWith("event")) {
-                    addEvent(message);
+                    case String msg when msg.startsWith("deadline") -> addDeadline(msg);
 
-                } else {
-                    throw new RemyException();
+                    case String msg when msg.startsWith("event") -> addEvent(msg);
+
+                    default -> throw new RemyException();
                 }
 
             } catch (RemyException e) {
                 System.out.println(e.getMessage());
+            }
+
+            if (stop) {
+                break;
             }
 
             message = scanner.nextLine();
