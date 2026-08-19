@@ -21,6 +21,8 @@ public class Remy {
 
                     case String msg when msg.equals("list") -> listTasks();
 
+                    case String msg when msg.startsWith("delete") -> deleteTask(msg);
+
                     case String msg when msg.startsWith("mark") -> markTaskAsDone(msg);
 
                     case String msg when msg.startsWith("unmark") -> markTaskAsUndone(msg);
@@ -131,7 +133,7 @@ public class Remy {
                 "____________________________________________________________\n"
                         + "Got it. I've added this task:\n"
                         + task + "\n"
-                        + "Now you have " + (nextFreePointer - 1) + " tasks in the list.\n"
+                        + "Now you have " + (nextFreePointer) + " tasks in the list.\n"
                         + "____________________________________________________________\n";
 
         System.out.println(result);
@@ -216,5 +218,46 @@ public class Remy {
         }
 
         System.out.println("____________________________________________________________\n");
+    }
+
+    public static void deleteTask(String message) {
+        if (nextFreePointer <= 0) {
+            throw new RemyException("There is no task for you to delete LOL.");
+        }
+
+        if (message.strip().length() == 6) {
+            throw new RemyException("you forgot which task to delete -_-.");
+        }
+
+        int formattedIndex;
+        try {
+            String idx = message.substring(6).strip();
+            formattedIndex = Integer.parseInt(idx);
+
+        } catch (NumberFormatException e) {
+            throw new RemyException("you have to put an integer :0");
+        }
+
+        if (formattedIndex >= nextFreePointer + 1 || formattedIndex < 1) {
+            throw new RemyException("your index is out of range :/");
+        }
+
+        Task taskToDelete = tasks[formattedIndex - 1];
+
+        for (int i = formattedIndex - 1; i < nextFreePointer; i++) {
+            tasks[i] = tasks[i + 1];
+        }
+
+        tasks[nextFreePointer - 1] = null;
+        nextFreePointer--;
+
+        String result =
+                "____________________________________________________________\n"
+                        + "Okay, I have helped you removed a task, remember to thank me:\n"
+                        + taskToDelete + "\n"
+                        + "Now you have " + (nextFreePointer) + " tasks in the list. Good luck LOL.\n"
+                        + "____________________________________________________________\n";
+
+        System.out.println(result);
     }
 }
