@@ -2,7 +2,10 @@ public class RemyException extends RuntimeException{
 
     // Invalid keyword
     public RemyException() {
-        super("Wha-? My bad bruh, I have no clue what you're talking about :/\n");
+        String message = "____________________________________________________________\n";
+        message += "Wha-? My bad bruh, I have no clue what you're talking about :/\n";
+        message += "____________________________________________________________\n";
+        super(message);
     }
 
     // Invalid todo task
