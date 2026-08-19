@@ -24,18 +24,36 @@ public class Remy {
                     listTasks();
 
                 } else if (message.startsWith("mark")) {
-                    if (message.length() > 4) {
-                        String idx = message.substring(4).strip();
-                        int formattedIndex = Integer.parseInt(idx);
-                        markTaskAsDone(formattedIndex - 1);
+                    if (message.strip().length() == 4) {
+                        throw new RemyException("you forgot which task to mark as done -_-.");
                     }
 
-                } else if (message.startsWith("unmark")) {
-                    if (message.length() > 6) {
-                        String idx = message.substring(6).strip();
-                        int formattedIndex = Integer.parseInt(idx);
-                        markTaskAsUndone(formattedIndex - 1);
+                    int formattedIndex;
+                    try {
+                        String idx = message.substring(4).strip();
+                        formattedIndex = Integer.parseInt(idx);
+
+                    } catch (NumberFormatException e) {
+                        throw new RemyException("you have to put an integer :0");
                     }
+
+                    markTaskAsDone(formattedIndex - 1);
+
+                } else if (message.startsWith("unmark")) {
+                    if (message.strip().length() == 6) {
+                        throw new RemyException("you forgot which task to unmark as undone -_-.");
+                    }
+
+                    int formattedIndex;
+                    try {
+                        String idx = message.substring(6).strip();
+                        formattedIndex = Integer.parseInt(idx);
+
+                    } catch (NumberFormatException e) {
+                        throw new RemyException("you have to put an integer :0");
+                    }
+
+                    markTaskAsUndone(formattedIndex - 1);
 
                 } else if (message.startsWith("todo")) {
                     if (message.strip().length() == 4) {
@@ -168,16 +186,16 @@ public class Remy {
     }
 
     public static void markTaskAsDone(int index) {
-        if (index >= nextFreePointer) {
-            return;
+        if (index >= nextFreePointer || index < 0) {
+            throw new RemyException("your index is out of range :/");
         }
 
         tasks[index].markAsDone();
     }
 
     public static void markTaskAsUndone(int index) {
-        if (index >= nextFreePointer) {
-            return;
+        if (index >= nextFreePointer || index < 0) {
+            throw new RemyException("your index is out of range :/");
         }
 
         tasks[index].markAsUndone();

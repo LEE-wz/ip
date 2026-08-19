@@ -8,6 +8,13 @@ public class RemyException extends RuntimeException{
         super(message);
     }
 
+    public RemyException(String msg) {
+        String message  = "____________________________________________________________\n";
+        message += msg + "\n";
+        message += "____________________________________________________________\n";
+        super(message);
+    }
+
     // Invalid todo task
     public RemyException(boolean hasDescription) {
         String message = "____________________________________________________________\n";
