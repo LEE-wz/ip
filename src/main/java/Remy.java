@@ -8,10 +8,7 @@ public class Remy {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        String greetMsg = getGreetMessage();
-        String exitMsg = getExitMessage();
-
-        System.out.println(greetMsg);
+        getGreetMessage();
 
         String message = scanner.nextLine();
         boolean stop = false;
@@ -49,11 +46,11 @@ public class Remy {
         }
         scanner.close();
 
-        System.out.println(exitMsg);
+        getExitMessage();
     }
 
-    public static String getGreetMessage() {
-        return
+    public static void getGreetMessage() {
+        System.out.println(
                 """
                         ____________________________________________________________
                          _____                     \s
@@ -68,16 +65,16 @@ public class Remy {
                         What can I do for you?
                         
                         ____________________________________________________________
-                        """;
+                        """);
     }
 
-    public static String getExitMessage() {
-        return
+    public static void getExitMessage() {
+        System.out.println(
                 """
                         ____________________________________________________________
                         Bye. Hope to see you again soon!
                         ____________________________________________________________
-                        """;
+                        """);
     }
 
     public static void markTaskAsDone(String message) {
