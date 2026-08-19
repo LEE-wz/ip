@@ -63,8 +63,8 @@ public class Remy {
                         |_|  \\_\\\\___|_| |_| |_|\\__, |
                                                 __/ |
                                                |___/\s
-                        Hello! I'm Remy.
-                        What can I do for you?
+                        Yo! I am Remy the rat from Ratatouille.
+                        How can I serve you today? :D
                         
                         ____________________________________________________________
                         """);
@@ -74,7 +74,7 @@ public class Remy {
         System.out.println(
                 """
                         ____________________________________________________________
-                        Bye. Hope to see you again soon!
+                        Cya. Call me when you need me!
                         ____________________________________________________________
                         """);
     }
@@ -126,9 +126,9 @@ public class Remy {
         tasks2.add(task);
         String result =
                 "____________________________________________________________\n"
-                        + "Got it. I've added this task:\n"
+                        + "Okay, I have helped you create a task:\n"
                         + task + "\n"
-                        + "Now you have " + (tasks2.size()) + " tasks in the list.\n"
+                        + "Now you have " + (tasks2.size()) + " task(s) in the list. Better hurry before it piles up!.\n"
                         + "____________________________________________________________\n";
 
         System.out.println(result);
@@ -217,7 +217,7 @@ public class Remy {
         }
 
         if (message.strip().length() == 6) {
-            throw new RemyException("you forgot which task to delete -_-.");
+            throw new RemyException("You forgot which task to delete -_-.");
         }
 
         int formattedIndex;
@@ -226,11 +226,11 @@ public class Remy {
             formattedIndex = Integer.parseInt(idx);
 
         } catch (NumberFormatException e) {
-            throw new RemyException("you have to put an integer :0");
+            throw new RemyException("You have to put an integer :0");
         }
 
         if (formattedIndex > tasks2.size() || formattedIndex < 1) {
-            throw new RemyException("your index is out of range :/");
+            throw new RemyException("Your index is out of range :/");
         }
 
         Task taskToDelete = tasks2.get(formattedIndex - 1);
