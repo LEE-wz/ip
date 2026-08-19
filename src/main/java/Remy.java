@@ -39,7 +39,7 @@ public class Remy {
                 if (messageSplit.length == 1) {
                     String description = messageSplit[0].substring(4).strip();
                     Todo newTodo = new Todo(description);
-                    addTask2(newTodo);
+                    addTask(newTodo);
                 }
 
             } else if (message.startsWith("deadline")) {
@@ -48,7 +48,7 @@ public class Remy {
                     String description = messageSplit[0].substring(8).strip();
                     String by = messageSplit[1].substring(2).strip();
                     Deadline newDeadline = new Deadline(description, by);
-                    addTask2(newDeadline);
+                    addTask(newDeadline);
                 }
 
             } else if (message.startsWith("event")) {
@@ -58,11 +58,11 @@ public class Remy {
                     String by = messageSplit[1].substring(2).strip();
                     String end = messageSplit[2].substring(3).strip();
                     Event newEvent = new Event(description, by, end);
-                    addTask2(newEvent);
+                    addTask(newEvent);
                 }
 
             } else {
-                addTask(message);
+                continue;
             }
 
             message = scanner.nextLine();
@@ -106,23 +106,7 @@ public class Remy {
                         """;
     }
 
-    public static void addTask(String taskDescription) {
-        if (nextFreePointer >= 100) {
-            return;
-        }
-
-        Task newTask = new Task(taskDescription);
-        tasks[nextFreePointer] = newTask;
-        nextFreePointer++;
-        String result =
-                  "____________________________________________________________\n"
-                + "added: " + newTask.description + "\n"
-                + "____________________________________________________________\n";
-
-        System.out.println(result);
-    }
-
-    public static void addTask2(Task task) {
+    public static void addTask(Task task) {
         if (nextFreePointer >= 100) {
             return;
         }
