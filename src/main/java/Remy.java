@@ -1,4 +1,3 @@
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.ArrayList;
 
@@ -14,26 +13,29 @@ public class Remy {
         boolean stop = false;
         while (true) {
             try {
-                switch (message) {
-                    case null -> throw new RemyException("You didn't type anything bruh D:");
+                if (message == null) {
+                    throw new RemyException("You didn't type anything bruh D:");
+                }
 
-                    case String msg when msg.equals("bye") -> stop = true;
+                CommandType commandType = CommandType.fromMessage(message);
+                switch (commandType) {
+                    case BYE -> stop = true;
 
-                    case String msg when msg.equals("list") -> listTasks();
+                    case LIST -> listTasks();
 
-                    case String msg when msg.startsWith("delete") -> deleteTask(msg);
+                    case DELETE -> deleteTask(message);
 
-                    case String msg when msg.startsWith("mark") -> markTaskAsDone(msg);
+                    case MARK -> markTaskAsDone(message);
 
-                    case String msg when msg.startsWith("unmark") -> markTaskAsUndone(msg);
+                    case UNMARK -> markTaskAsUndone(message);
 
-                    case String msg when msg.startsWith("todo") -> addTodo(msg);
+                    case TODO -> addTodo(message);
 
-                    case String msg when msg.startsWith("deadline") -> addDeadline(msg);
+                    case DEADLINE -> addDeadline(message);
 
-                    case String msg when msg.startsWith("event") -> addEvent(msg);
+                    case EVENT -> addEvent(message);
 
-                    default -> throw new RemyException();
+                    case UNKNOWN -> throw new RemyException();
                 }
 
             } catch (RemyException e) {
