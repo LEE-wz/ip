@@ -76,7 +76,7 @@ public class Remy {
         System.out.println(
                 """
                         ____________________________________________________________
-                        Cya. Call me when you need me!
+                        Cya. Call me again when you need me!
                         ____________________________________________________________
                         """);
     }
@@ -130,7 +130,7 @@ public class Remy {
                 "____________________________________________________________\n"
                         + "Okay, I have helped you create a task:\n"
                         + task + "\n"
-                        + "Now you have " + (tasks2.size()) + " task(s) in the list. Better hurry before it piles up!.\n"
+                        + "Now you have " + (tasks2.size()) + " task(s) in the list. Better hurry before it piles up!\n"
                         + "____________________________________________________________\n";
 
         System.out.println(result);
