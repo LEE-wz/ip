@@ -9,10 +9,11 @@ import java.time.temporal.ChronoUnit;
  * @author LEE-wz
  */
 public class Deadline extends Task{
-    /**
-     * Date or time that this deadline task has to be finished
-     */
+    /** Date or time that this deadline task has to be finished in String format */
     protected String by;
+
+    /** Date or time that this deadline task has to be finished in LocalDateTime format */
+    protected LocalDateTime byDateTime;
 
     /**
      * Constructor for a Deadline task
@@ -22,6 +23,19 @@ public class Deadline extends Task{
     public Deadline(String description, String by) {
         super(description);
         this.by = by;
+        this.byDateTime = null;
+    }
+
+    /**
+     * Constructor for a Deadline task
+     *
+     * @param description The description of this Deadline task
+     * @param byDateTime The deadline of this Deadline task in LocalDateTime format
+     */
+    public Deadline(String description, LocalDateTime byDateTime) {
+        super(description);
+        this.by = "";
+        this.byDateTime = byDateTime;
     }
 
     /**
