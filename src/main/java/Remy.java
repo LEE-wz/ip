@@ -1,5 +1,10 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.stream.Collectors;
 
 /**
  * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie
@@ -11,11 +16,15 @@ public class Remy {
     /** An array list that stores the list of tasks. */
     public static ArrayList<Task> tasks = new ArrayList<>();
 
+    /** The file used to persist tasks between chatbot sessions. */
+    private static final Path TASK_FILE = Path.of("./data/remy.txt");
+
     /**
      * The main logic of the chatbot.
      * The chatbot will perform certain actions based on user's input.
      */
     public static void main(String[] args) {
+        loadTasks();
         displayGreetMessage();
 
         Scanner scanner = new Scanner(System.in);
@@ -113,6 +122,7 @@ public class Remy {
         }
 
         tasks.get(formattedIndex - 1).markAsDone();
+        saveTasks();
     }
 
     /**
@@ -141,6 +151,7 @@ public class Remy {
         }
 
         tasks.get(formattedIndex - 1).markAsUndone();
+        saveTasks();
     }
 
     /**
@@ -150,6 +161,7 @@ public class Remy {
      */
     public static void addTask(Task task) {
         tasks.add(task);
+        saveTasks();
         String result =
                 "____________________________________________________________\n"
                         + "Okay, I have helped you create a task:\n"
@@ -171,7 +183,7 @@ public class Remy {
             throw new RemyException(false);
         }
 
-        String description = message.substring(4);
+        String description = message.substring(4).strip();
         Todo newTodo = new Todo(description);
         addTask(newTodo);
     }
@@ -289,6 +301,7 @@ public class Remy {
 
         Task taskToDelete = tasks.get(formattedIndex - 1);
         tasks.remove(taskToDelete);
+        saveTasks();
         String result =
                 "____________________________________________________________\n"
                         + "Okay, I have helped you removed a task, remember to thank me:\n"
@@ -296,5 +309,131 @@ public class Remy {
                         + "Now you have " + (tasks.size()) + " tasks in the list. Good luck LOL.\n"
                         + "____________________________________________________________\n";
         System.out.println(result);
+    }
+
+    /** Saves the current task list to the hard disk. */
+    public static void saveTasks() {
+        Path temporaryFile = null;
+        try {
+            Path parent = TASK_FILE.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+
+            String taskData = tasks.stream()
+                    .map(Task::toString)
+                    .collect(Collectors.joining(System.lineSeparator()));
+
+            temporaryFile = Files.createTempFile(parent, "remy-", ".tmp");
+            Files.writeString(temporaryFile, taskData);
+
+            try {
+                Files.move(temporaryFile, TASK_FILE, StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                Files.move(temporaryFile, TASK_FILE, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+        } catch (IOException | SecurityException e) {
+            System.out.println("Unable to save tasks to " + TASK_FILE);
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException | SecurityException ignored) {
+                    // The original save error is more useful to the user.
+                }
+            }
+        }
+    }
+
+    /** Loads saved tasks from the hard disk when the chatbot starts. */
+    public static void loadTasks() {
+        try {
+            if (!Files.exists(TASK_FILE)) {
+                return;
+            }
+
+            ArrayList<Task> loadedTasks = new ArrayList<>();
+            for (String line : Files.readAllLines(TASK_FILE)) {
+                Task task = parseTask(line);
+                if (task != null) {
+                    loadedTasks.add(task);
+                }
+            }
+            tasks.clear();
+            tasks.addAll(loadedTasks);
+        } catch (IOException | SecurityException e) {
+            System.out.println("Unable to load saved tasks from " + TASK_FILE);
+        }
+    }
+
+    /**
+     * Parses a line from the saved task file and creates a corresponding Task object.
+     *
+     * @param line A line from the saved task file representing a task
+     * @return A Task object corresponding to the line, or null if the line is invalid
+     */
+    private static Task parseTask(String line) {
+        // Validate the line format before parsing
+        if (line == null || line.length() < 8 || line.charAt(0) != '[' || line.charAt(2) != ']'
+                || line.charAt(3) != '[' || (line.charAt(4) != ' ' && line.charAt(4) != 'X')
+                || line.charAt(5) != ']' || line.charAt(6) != ' ') {
+            return null;
+        }
+
+        boolean isDone = line.charAt(4) == 'X';
+        String taskDetails = line.substring(7);
+        if (taskDetails.strip().isEmpty()) {
+            return null;
+        }
+        Task task;
+
+        switch (line.charAt(1)) {
+            case 'T' -> task = new Todo(taskDetails);
+            case 'D' -> {
+                String marker = " (by: ";
+                if (!taskDetails.endsWith(")") || !taskDetails.contains(marker)) {
+                    return null;
+                }
+
+                int markerIndex = taskDetails.lastIndexOf(marker);
+                if (markerIndex == 0 || markerIndex + marker.length() == taskDetails.length() - 1) {
+                    return null;
+                }
+
+                task = new Deadline(
+                        taskDetails.substring(0, markerIndex),
+                        taskDetails.substring(markerIndex + marker.length(), taskDetails.length() - 1));
+            }
+            case 'E' -> {
+                String startMarker = " (from: ";
+                String endMarker = " to: ";
+                if (!taskDetails.endsWith(")") || !taskDetails.contains(startMarker)
+                        || !taskDetails.contains(endMarker)) {
+                    return null;
+                }
+
+                int startIndex = taskDetails.lastIndexOf(startMarker);
+                int endIndex = taskDetails.lastIndexOf(endMarker);
+                if (endIndex < startIndex) {
+                    return null;
+                }
+                if (startIndex == 0 || startIndex + startMarker.length() == endIndex
+                        || endIndex + endMarker.length() == taskDetails.length() - 1) {
+                    return null;
+                }
+
+                task = new Event(
+                        taskDetails.substring(0, startIndex),
+                        taskDetails.substring(startIndex + startMarker.length(), endIndex),
+                        taskDetails.substring(endIndex + endMarker.length(), taskDetails.length() - 1));
+            }
+            default -> {
+                return null;
+            }
+        }
+
+        task.isDone = isDone;
+        return task;
     }
 }
