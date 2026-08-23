@@ -1,5 +1,9 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
 
 /**
  * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie
@@ -10,6 +14,9 @@ import java.util.ArrayList;
 public class Remy {
     /** An array list that stores the list of tasks. */
     public static ArrayList<Task> tasks = new ArrayList<>();
+
+    /** The file used to persist tasks between chatbot sessions. */
+    private static final Path TASK_FILE = Path.of("./data/remy.txt");
 
     /**
      * The main logic of the chatbot.
@@ -113,6 +120,7 @@ public class Remy {
         }
 
         tasks.get(formattedIndex - 1).markAsDone();
+        saveTasks();
     }
 
     /**
@@ -141,6 +149,7 @@ public class Remy {
         }
 
         tasks.get(formattedIndex - 1).markAsUndone();
+        saveTasks();
     }
 
     /**
@@ -150,6 +159,7 @@ public class Remy {
      */
     public static void addTask(Task task) {
         tasks.add(task);
+        saveTasks();
         String result =
                 "____________________________________________________________\n"
                         + "Okay, I have helped you create a task:\n"
@@ -289,6 +299,7 @@ public class Remy {
 
         Task taskToDelete = tasks.get(formattedIndex - 1);
         tasks.remove(taskToDelete);
+        saveTasks();
         String result =
                 "____________________________________________________________\n"
                         + "Okay, I have helped you removed a task, remember to thank me:\n"
@@ -296,5 +307,17 @@ public class Remy {
                         + "Now you have " + (tasks.size()) + " tasks in the list. Good luck LOL.\n"
                         + "____________________________________________________________\n";
         System.out.println(result);
+    }
+
+    /** Saves the current task list to the hard disk. */
+    public static void saveTasks() {
+        try {
+            Files.writeString(
+                    TASK_FILE,
+                    tasks.stream().map(Task::toString).collect(Collectors.joining(System.lineSeparator()))
+                            + System.lineSeparator());
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to save tasks to " + TASK_FILE, e);
+        }
     }
 }
