@@ -22,7 +22,6 @@ public class RemyException extends RuntimeException{
         message += "\nYour todo task should look something like this, please don't mess it up again -_-: \n";
         message += "todo borrow book\n";
         message += "____________________________________________________________\n";
-
         super(message);
     }
 
@@ -42,7 +41,6 @@ public class RemyException extends RuntimeException{
         message += "\nYour deadline task should look something like this, please don't mess it up again -_-: \n";
         message += "deadline return book /by Sunday\n";
         message += "____________________________________________________________\n";
-
         super(message);
     }
 
@@ -66,8 +64,6 @@ public class RemyException extends RuntimeException{
         message += "\nYour event task should look something like this, please don't mess it up again -_-: \n";
         message += "event project meeting /from Mon 2pm /to 4pm\n";
         message += "____________________________________________________________\n";
-
-
         super(message);
     }
 }

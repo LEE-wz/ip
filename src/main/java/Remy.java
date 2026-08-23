@@ -1,16 +1,28 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 
+/**
+ * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie
+ * 'Ratatouille'.
+ *
+ * @author LEE-wz
+ */
 public class Remy {
-    public static ArrayList<Task> tasks2 = new ArrayList<>();
+    /** An array list that stores the list of tasks. */
+    public static ArrayList<Task> tasks = new ArrayList<>();
 
+    /**
+     * The main logic of the chatbot.
+     * The chatbot will perform certain actions based on user's input.
+     */
     public static void main(String[] args) {
+        displayGreetMessage();
+
         Scanner scanner = new Scanner(System.in);
-
-        getGreetMessage();
-
         String message = scanner.nextLine();
-        boolean stop = false;
+
+        boolean canStopLoop = false;
+
         while (true) {
             try {
                 if (message == null) {
@@ -19,41 +31,33 @@ public class Remy {
 
                 CommandType commandType = CommandType.fromMessage(message);
                 switch (commandType) {
-                    case BYE -> stop = true;
-
+                    case BYE -> canStopLoop = true;
                     case LIST -> listTasks();
-
                     case DELETE -> deleteTask(message);
-
                     case MARK -> markTaskAsDone(message);
-
                     case UNMARK -> markTaskAsUndone(message);
-
                     case TODO -> addTodo(message);
-
                     case DEADLINE -> addDeadline(message);
-
                     case EVENT -> addEvent(message);
-
                     case UNKNOWN -> throw new RemyException();
                 }
-
             } catch (RemyException e) {
                 System.out.println(e.getMessage());
             }
 
-            if (stop) {
+            if (canStopLoop) {
                 break;
             }
 
             message = scanner.nextLine();
         }
-        scanner.close();
 
-        getExitMessage();
+        scanner.close();
+        displayExitMessage();
     }
 
-    public static void getGreetMessage() {
+    /** Prints greeting message when user starts the chatbot. */
+    public static void displayGreetMessage() {
         System.out.println(
                 """
                         ____________________________________________________________
@@ -72,7 +76,8 @@ public class Remy {
                         """);
     }
 
-    public static void getExitMessage() {
+    /** Prints exit message when user ends the chatbot. */
+    public static void displayExitMessage() {
         System.out.println(
                 """
                         ____________________________________________________________
@@ -81,6 +86,13 @@ public class Remy {
                         """);
     }
 
+    /**
+     * Marks the task specified by the user as 'done'.
+     *
+     * @param message Message given by user into chatbot input
+     * @throws RemyException If task index is omitted or invalid (out of range)
+     * @throws NumberFormatException If task index given is not an integer
+     */
     public static void markTaskAsDone(String message) {
 
         if (message.strip().length() == 4) {
@@ -96,13 +108,20 @@ public class Remy {
             throw new RemyException("you have to put an integer :0");
         }
 
-        if (formattedIndex > tasks2.size() || formattedIndex < 1) {
+        if (formattedIndex > tasks.size() || formattedIndex < 1) {
             throw new RemyException("your index is out of range :/");
         }
 
-        tasks2.get(formattedIndex - 1).markAsDone();
+        tasks.get(formattedIndex - 1).markAsDone();
     }
 
+    /**
+     * Marks the task specified by the user as 'undone'.
+     *
+     * @param message Message given by user into chatbot input
+     * @throws RemyException If task index is omitted or invalid (out of range)
+     * @throws NumberFormatException If task index given is not an integer
+     */
     public static void markTaskAsUndone(String message) {
         if (message.strip().length() == 6) {
             throw new RemyException("you forgot which task to unmark as undone -_-.");
@@ -117,25 +136,36 @@ public class Remy {
             throw new RemyException("you have to put an integer :0");
         }
 
-        if (formattedIndex > tasks2.size() || formattedIndex < 1) {
+        if (formattedIndex > tasks.size() || formattedIndex < 1) {
             throw new RemyException("your index is out of range :/");
         }
 
-        tasks2.get(formattedIndex - 1).markAsUndone();
+        tasks.get(formattedIndex - 1).markAsUndone();
     }
 
+    /**
+     * Adds a task into list of tasks, and prints the current number of tasks.
+     *
+     * @param task Task specified by user, which can be either an Event, Deadline, or To\do
+     */
     public static void addTask(Task task) {
-        tasks2.add(task);
+        tasks.add(task);
         String result =
                 "____________________________________________________________\n"
                         + "Okay, I have helped you create a task:\n"
                         + task + "\n"
-                        + "Now you have " + (tasks2.size()) + " task(s) in the list. Better hurry before it piles up!\n"
+                        + "Now you have " + (tasks.size()) + " task(s) in the list. Better hurry before it piles up!\n"
                         + "____________________________________________________________\n";
-
         System.out.println(result);
     }
 
+    /**
+     * Creates a new To\do class with the description specified by user in the message text,
+     * and adds it into list of tasks.
+     *
+     * @param message Message given by user into chatbot input
+     * @throws RemyException If description is omitted
+     */
     public static void addTodo(String message) {
         if (message.strip().length() == 4) {
             throw new RemyException(false);
@@ -146,12 +176,20 @@ public class Remy {
         addTask(newTodo);
     }
 
+    /**
+     * Creates a new Deadline class with the description and deadline specified by user in the message text,
+     * and adds it into list of tasks.
+     *
+     * @param message Message given by user into chatbot input
+     * @throws RemyException If description or deadline is omitted
+     */
     public static void addDeadline(String message) {
         if (message.length() == 8) {
             throw new RemyException(false, false);
         }
 
         String[] messageSplit = message.split("/by", 0);
+
         if (messageSplit.length == 1) {
             throw new RemyException(true, false);
         }
@@ -159,62 +197,77 @@ public class Remy {
         String description = messageSplit[0].substring(8).strip();
         String deadline = messageSplit[1].strip();
 
-        boolean missingDescription = description.isEmpty();
-        boolean missingDeadline = deadline.isEmpty();
+        boolean isMissingDescription = description.isEmpty();
+        boolean isMissingDeadline = deadline.isEmpty();
 
-        if (missingDescription || missingDeadline) {
-            throw new RemyException(!missingDescription, !missingDeadline);
+        if (isMissingDescription || isMissingDeadline) {
+            throw new RemyException(!isMissingDescription, !isMissingDeadline);
         }
 
         Deadline newDeadline = new Deadline(description, deadline);
         addTask(newDeadline);
     }
 
+    /**
+     * Creates a new Event class with the description, start and end specified by user in the message text,
+     * and adds it into list of tasks.
+     *
+     * @param message Message given by user into chatbot input
+     * @throws RemyException If description, or start, or end is omitted
+     */
     public static void addEvent(String message) {
         if (message.length() == 5) {
             throw new RemyException(false, false, false);
         }
 
         String[] messageSplit = message.split("/from|/to", 0);
+
         if (messageSplit.length == 1) {
             throw new RemyException(true, false, false);
         }
 
         String description = messageSplit[0].substring(5).strip();
-        boolean missingDescription = description.isEmpty();
+        boolean isMissingDescription = description.isEmpty();
 
         if (messageSplit.length == 2) {
-            boolean containsFrom = message.contains("/from");
-            boolean containsTo = message.contains("/to");
-            throw new RemyException(!missingDescription, containsFrom, containsTo);
+            boolean hasFrom = message.contains("/from");
+            boolean hasTo = message.contains("/to");
+            throw new RemyException(!isMissingDescription, hasFrom, hasTo);
         }
 
         String start = messageSplit[1].strip();
         String end = messageSplit[2].strip();
 
-        boolean missingStart = start.isEmpty();
-        boolean missingEnd = end.isEmpty();
+        boolean isMissingStart = start.isEmpty();
+        boolean isMissingEnd = end.isEmpty();
 
-        if (missingDescription || missingStart || missingEnd) {
-            throw new RemyException(!missingDescription, !missingStart, !missingEnd);
+        if (isMissingDescription || isMissingStart || isMissingEnd) {
+            throw new RemyException(!isMissingDescription, !isMissingStart, !isMissingEnd);
         }
 
         Event newEvent = new Event(description, start, end);
         addTask(newEvent);
     }
 
+    /**
+     * Prints out the list of tasks for the user.
+     * Each task shows its type of task, description, and whether they are done or not.
+     */
     public static void listTasks() {
         System.out.println("____________________________________________________________\n");
-
-        for (Task task : tasks2) {
-            System.out.println((tasks2.indexOf(task) + 1) + ". " + task);
+        for (Task task : tasks) {
+            System.out.println((tasks.indexOf(task) + 1) + ". " + task);
         }
-
         System.out.println("____________________________________________________________\n");
     }
 
+    /**
+     *
+     * @param message Message given by user into chatbot input
+     * @throws RemyException If there are zero tasks, task index is omitted or invalid (out of range)
+     */
     public static void deleteTask(String message) {
-        if (tasks2.isEmpty()) {
+        if (tasks.isEmpty()) {
             throw new RemyException("There is no task for you to delete LOL.");
         }
 
@@ -226,26 +279,22 @@ public class Remy {
         try {
             String idx = message.substring(6).strip();
             formattedIndex = Integer.parseInt(idx);
-
         } catch (NumberFormatException e) {
             throw new RemyException("You have to put an integer :0");
         }
 
-        if (formattedIndex > tasks2.size() || formattedIndex < 1) {
+        if (formattedIndex > tasks.size() || formattedIndex < 1) {
             throw new RemyException("Your index is out of range :/");
         }
 
-        Task taskToDelete = tasks2.get(formattedIndex - 1);
-
-        tasks2.remove(taskToDelete);
-
+        Task taskToDelete = tasks.get(formattedIndex - 1);
+        tasks.remove(taskToDelete);
         String result =
                 "____________________________________________________________\n"
                         + "Okay, I have helped you removed a task, remember to thank me:\n"
                         + taskToDelete + "\n"
-                        + "Now you have " + (tasks2.size()) + " tasks in the list. Good luck LOL.\n"
+                        + "Now you have " + (tasks.size()) + " tasks in the list. Good luck LOL.\n"
                         + "____________________________________________________________\n";
-
         System.out.println(result);
     }
 }

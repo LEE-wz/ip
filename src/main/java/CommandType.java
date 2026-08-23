@@ -1,3 +1,7 @@
+/**
+ * The CommandType enum is a data type to define a fixed set of instructions for the chatbot to follow.
+ * Each CommandType will result in different actions performed by the chatbot.
+ */
 public enum CommandType {
     BYE,
     LIST,
@@ -9,6 +13,13 @@ public enum CommandType {
     EVENT,
     UNKNOWN;
 
+    /**
+     * Returns the corresponding command type based on the message input by the user
+     *
+     * @param message Message given by user into chatbot input
+     * @return One of the command types if message equals or contains certain keywords
+     *         UNKNOWN if message does not contain any of the keywords
+     */
     public static CommandType fromMessage(String message) {
         if (message == null) {
             return UNKNOWN;
