@@ -11,11 +11,11 @@ public class Event extends Task{
 
     /** Format used when displaying date-only event endpoints. */
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd uuuu");
+        DateTimeFormatter.ofPattern("MMM dd yyyy");
 
     /** Format used when displaying event endpoints that include a time. */
     private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm");
+        DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
 
     /** The starting date/time of this Event task in LocalDate format */
     protected LocalDate startDate;

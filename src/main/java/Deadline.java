@@ -11,11 +11,11 @@ public class Deadline extends Task{
 
     /** Format used when displaying date-only deadlines. */
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd uuuu");
+        DateTimeFormatter.ofPattern("MMM dd yyyy");
 
     /** Format used when displaying deadlines that include a time. */
     private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm");
+        DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
 
     /** Date or time that this deadline task has to be finished in LocalDate format */
     protected LocalDate byDate;
