@@ -22,8 +22,8 @@ import java.time.format.DateTimeParseException;
  * @author LEE-wz
  */
 public class Remy {
-    /** An array list that stores the list of tasks. */
-    public static ArrayList<Task> tasks = new ArrayList<>();
+    /** Stores the tasks managed during this chat session. */
+    private static TaskList tasks = new TaskList();
 
     /** Handles messages displayed to the user. */
     private static final Ui UI = new Ui();
@@ -269,7 +269,7 @@ public class Remy {
      * Each task shows its type of task, description, and whether they are done or not.
      */
     public static void listTasks() {
-        UI.showTaskList(tasks);
+        UI.showTaskList(tasks.getTasks());
     }
 
     /**
@@ -299,8 +299,7 @@ public class Remy {
             throw new RemyException("Your index is out of range :/");
         }
 
-        Task taskToDelete = tasks.get(formattedIndex - 1);
-        tasks.remove(taskToDelete);
+        Task taskToDelete = tasks.remove(formattedIndex - 1);
         saveTasks();
         UI.showTaskDeleted(taskToDelete, tasks.size());
     }
@@ -314,7 +313,7 @@ public class Remy {
                 Files.createDirectories(parent);
             }
 
-            String taskData = tasks.stream()
+            String taskData = tasks.getTasks().stream()
                     .map(Task::toString)
                     .collect(Collectors.joining(System.lineSeparator()));
 
@@ -354,8 +353,7 @@ public class Remy {
                     loadedTasks.add(task);
                 }
             }
-            tasks.clear();
-            tasks.addAll(loadedTasks);
+            tasks = new TaskList(loadedTasks);
         } catch (IOException | SecurityException e) {
             System.out.println("Unable to load saved tasks from " + TASK_FILE);
         }
