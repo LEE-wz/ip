@@ -1,4 +1,0 @@
-[T][ ]  test
-[D][ ] test1 (by: tmr)
-[T][ ]  close
-[E][ ] close (from: 10pm to: 5am)
