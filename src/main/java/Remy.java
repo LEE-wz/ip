@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 import java.io.IOException;
 
 /**
@@ -29,8 +27,7 @@ public class Remy {
         loadTasks();
         UI.showGreeting();
 
-        Scanner scanner = new Scanner(System.in);
-        String message = scanner.nextLine();
+        String message = UI.readCommand();
 
         boolean canStopLoop = false;
 
@@ -60,10 +57,10 @@ public class Remy {
                 break;
             }
 
-            message = scanner.nextLine();
+            message = UI.readCommand();
         }
 
-        scanner.close();
+        UI.close();
         UI.showFarewell();
     }
 

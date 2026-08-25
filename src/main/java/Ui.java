@@ -1,9 +1,31 @@
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Handles all messages shown to the user by the Remy application.
  */
 public class Ui {
+    /** Reads commands entered through the console. */
+    private final Scanner scanner;
+
+    /** Creates a user interface that communicates through the standard console. */
+    public Ui() {
+        this.scanner = new Scanner(System.in);
+    }
+
+    /**
+     * Reads the next command entered by the user.
+     *
+     * @return the next command
+     */
+    public String readCommand() {
+        return scanner.nextLine();
+    }
+
+    /** Closes the console input reader. */
+    public void close() {
+        scanner.close();
+    }
 
     /** Displays the greeting shown when a chat session begins. */
     public void showGreeting() {
