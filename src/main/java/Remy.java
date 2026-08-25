@@ -81,7 +81,9 @@ public class Remy {
             throw new RemyException("your index is out of range :/");
         }
 
-        tasks.get(formattedIndex - 1).markAsDone();
+        Task task = tasks.get(formattedIndex - 1);
+        task.markAsDone();
+        UI.showTaskMarkedAsDone(task);
         saveTasks();
     }
 
@@ -98,7 +100,9 @@ public class Remy {
             throw new RemyException("your index is out of range :/");
         }
 
-        tasks.get(formattedIndex - 1).markAsUndone();
+        Task task = tasks.get(formattedIndex - 1);
+        task.markAsUndone();
+        UI.showTaskMarkedAsUndone(task);
         saveTasks();
     }
 
@@ -180,7 +184,7 @@ public class Remy {
         try {
             STORAGE.save(tasks);
         } catch (IOException | SecurityException e) {
-            System.out.println("Unable to save tasks to data/remy.txt");
+            UI.showSavingError();
         }
     }
 
@@ -189,7 +193,7 @@ public class Remy {
         try {
             tasks = STORAGE.load();
         } catch (IOException | SecurityException e) {
-            System.out.println("Unable to load saved tasks from data/remy.txt");
+            UI.showLoadingError();
         }
     }
 }

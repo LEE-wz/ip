@@ -88,4 +88,38 @@ public class Ui {
                         + "____________________________________________________________\n";
         System.out.println(result);
     }
+
+    /**
+     * Displays the confirmation after a task has been marked as done.
+     *
+     * @param task the task marked as done
+     */
+    public void showTaskMarkedAsDone(Task task) {
+        System.out.println("____________________________________________________________\n");
+        System.out.println(" Nice! I've marked this task as done:\n");
+        System.out.println(task);
+        System.out.println("____________________________________________________________\n");
+    }
+
+    /**
+     * Displays the confirmation after a task has been marked as undone.
+     *
+     * @param task the task marked as undone
+     */
+    public void showTaskMarkedAsUndone(Task task) {
+        System.out.println("____________________________________________________________\n");
+        System.out.println(" OK, I've marked this task as not done yet:\n");
+        System.out.println(task);
+        System.out.println("____________________________________________________________\n");
+    }
+
+    /** Displays the error shown when saving tasks fails. */
+    public void showSavingError() {
+        System.out.println("Unable to save tasks to data/remy.txt");
+    }
+
+    /** Displays the error shown when loading tasks fails. */
+    public void showLoadingError() {
+        System.out.println("Unable to load saved tasks from data/remy.txt");
+    }
 }
