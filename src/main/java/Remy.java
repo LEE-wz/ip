@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.List;
 
 import java.io.IOException;
 
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+import java.time.format.DateTimeParseException;
 
 /**
  * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie
@@ -224,7 +225,56 @@ public class Remy {
             throw new RemyException(!isMissingDescription, !isMissingDeadline);
         }
 
-        Deadline newDeadline = new Deadline(description, deadline);
+        Deadline newDeadline = null;
+        List<DateTimeFormatter> multiDateTimeFormatter = List.of(
+                DateTimeFormatter.ofPattern("d/M/uuuu HHmm"),
+                DateTimeFormatter.ofPattern("d/M/uuuu HH:mm"),
+                DateTimeFormatter.ofPattern("d/M/uuuu HH:mm:ss"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                DateTimeFormatter.ofPattern("yyyy/MM/dd HHmm"),
+                DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HHmm"),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+
+        for (DateTimeFormatter formatter : multiDateTimeFormatter) {
+            try {
+                LocalDateTime deadlineDateTime = LocalDateTime.parse(deadline, formatter);
+                newDeadline = new Deadline(description, deadlineDateTime);
+                break;
+            } catch (DateTimeParseException ignored) {
+                // Try the next supported date-time format.
+            }
+        }
+
+        if (newDeadline == null) {
+            List<DateTimeFormatter> dateFormatters = List.of(
+                    DateTimeFormatter.ofPattern("d/M/yyyy"),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                    DateTimeFormatter.ofPattern("yyyy/MM/dd"),
+                    DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            for (DateTimeFormatter formatter : dateFormatters) {
+                try {
+                    LocalDate deadlineDate = LocalDate.parse(deadline, formatter);
+                    newDeadline = new Deadline(description, deadlineDate);
+                    break;
+                } catch (DateTimeParseException ignored) {
+                    // Try the next supported date format.
+                }
+            }
+        }
+
+        if (newDeadline == null) {
+            throw new RemyException(true, false);
+        }
+
         addTask(newDeadline);
     }
 
@@ -409,9 +459,12 @@ public class Remy {
                     return null;
                 }
 
-                task = new Deadline(
-                        taskDetails.substring(0, markerIndex),
-                        taskDetails.substring(markerIndex + marker.length(), taskDetails.length() - 1));
+                String description = taskDetails.substring(0, markerIndex);
+                String deadline = taskDetails.substring(markerIndex + marker.length(), taskDetails.length() - 1);
+                task = parseSavedDeadline(description, deadline);
+                if (task == null) {
+                    return null;
+                }
             }
             case 'E' -> {
                 String startMarker = " (from: ";
@@ -443,6 +496,32 @@ public class Remy {
 
         task.isDone = isDone;
         return task;
+    }
+
+    /** Parses a deadline from its displayed or legacy persisted representation. */
+    private static Deadline parseSavedDeadline(String description, String deadline) {
+        List<DateTimeFormatter> dateTimeFormatters = List.of(
+                DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm"),
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        for (DateTimeFormatter formatter : dateTimeFormatters) {
+            try {
+                return new Deadline(description, LocalDateTime.parse(deadline, formatter));
+            } catch (DateTimeParseException ignored) {
+                // Try the next supported date-time format.
+            }
+        }
+
+        List<DateTimeFormatter> dateFormatters = List.of(
+                DateTimeFormatter.ofPattern("MMM dd uuuu"),
+                DateTimeFormatter.ISO_LOCAL_DATE);
+        for (DateTimeFormatter formatter : dateFormatters) {
+            try {
+                return new Deadline(description, LocalDate.parse(deadline, formatter));
+            } catch (DateTimeParseException ignored) {
+                // Try the next supported date format.
+            }
+        }
+        return null;
     }
 
     

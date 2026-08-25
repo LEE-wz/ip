@@ -1,7 +1,6 @@
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
 /**
  * This class encapsulates a Deadline task
@@ -9,8 +8,14 @@ import java.time.temporal.ChronoUnit;
  * @author LEE-wz
  */
 public class Deadline extends Task{
-    /** Date or time that this deadline task has to be finished in String format */
-    protected String by;
+
+    /** Format used when displaying date-only deadlines. */
+    private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
+        DateTimeFormatter.ofPattern("MMM dd uuuu");
+
+    /** Format used when displaying deadlines that include a time. */
+    private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMATTER =
+        DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm");
 
     /** Date or time that this deadline task has to be finished in LocalDate format */
     protected LocalDate byDate;
@@ -22,20 +27,10 @@ public class Deadline extends Task{
      * Constructor for a Deadline task
      *
      * @param description The description of this Deadline task
-     * @param by The deadline of this Deadline task in String format
-     */
-    public Deadline(String description, String by) {
-        this(description, by, null, null);
-    }
-
-    /**
-     * Constructor for a Deadline task
-     *
-     * @param description The description of this Deadline task
      * @param byDate The deadline of this Deadline task in LocalDate format
      */
     public Deadline(String description, LocalDate byDate) {
-        this(description, "", byDate, null);
+        this(description, byDate, null);
     }
 
     /**
@@ -45,20 +40,18 @@ public class Deadline extends Task{
      * @param byDateTime The deadline of this Deadline task in LocalDateTime format
      */
     public Deadline(String description, LocalDateTime byDateTime) {
-        this(description, "", null, byDateTime);
+        this(description, null, byDateTime);
     }
 
     /**
      * Master constructor for a Deadline Task
      *
      * @param description The description of this Deadline task
-     * @param by The deadline of this Deadline task in String format
      * @param byDate The deadline of this Deadline task in LocalDate format
      * @param byDateTime The deadline of this Deadline task in LocalDateTime format
      */
-    public Deadline(String description, String by, LocalDate byDate, LocalDateTime byDateTime) {
+    public Deadline(String description, LocalDate byDate, LocalDateTime byDateTime) {
         super(description);
-        this.by = by;
         this.byDate = byDate;
         this.byDateTime = byDateTime;
     }
@@ -70,6 +63,15 @@ public class Deadline extends Task{
      */
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " + this.by + ")";
+        String strFormat = "[D]" + super.toString() + " (by: ";
+
+        if (this.byDateTime != null) {
+            strFormat += this.byDateTime.format(DATE_TIME_DISPLAY_FORMATTER);
+        } else if (this.byDate != null) {
+            strFormat += this.byDate.format(DATE_DISPLAY_FORMATTER);
+        }
+
+        strFormat += ')';
+        return strFormat;
     }
 }
