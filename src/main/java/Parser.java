@@ -7,12 +7,32 @@ import java.time.LocalDateTime;
 public class Parser {
 
     /**
+     * Parses a user message into an executable command.
+     *
+     * @param message user message to inspect
+     * @return command represented by the user message
+     * @throws RemyException if the message is unknown or its arguments are invalid
+     */
+    public Command parse(String message) {
+        CommandType commandType = parseCommandType(message);
+        return switch (commandType) {
+            case BYE -> new ExitCommand();
+            case LIST -> new ListCommand();
+            case DELETE -> new DeleteCommand(parseTaskIndex(message, commandType));
+            case MARK -> new MarkCommand(parseTaskIndex(message, commandType), true);
+            case UNMARK -> new MarkCommand(parseTaskIndex(message, commandType), false);
+            case TODO, DEADLINE, EVENT -> new AddCommand(parseTask(message, commandType));
+            case UNKNOWN -> throw new RemyException();
+        };
+    }
+
+    /**
      * Identifies the command represented by a user message.
      *
      * @param message user message to inspect
      * @return the command type represented by the message, or UNKNOWN when it is not recognised
      */
-    public CommandType parseCommandType(String message) {
+    private CommandType parseCommandType(String message) {
         if (message == null) {
             return CommandType.UNKNOWN;
         }
@@ -53,7 +73,7 @@ public class Parser {
      * @return the one-based task index supplied by the user
      * @throws RemyException if the index is missing or is not an integer
      */
-    public int parseTaskIndex(String message, CommandType commandType) {
+    private int parseTaskIndex(String message, CommandType commandType) {
         return switch (commandType) {
             case MARK -> parseTaskIndex(message, 4,
                     "you forgot which task to mark as done -_-.", "you have to put an integer :0");
@@ -73,7 +93,7 @@ public class Parser {
      * @return newly created task
      * @throws RemyException if required task details are invalid or missing
      */
-    public Task parseTask(String message, CommandType commandType) {
+    private Task parseTask(String message, CommandType commandType) {
         return switch (commandType) {
             case TODO -> parseTodo(message);
             case DEADLINE -> parseDeadline(message);
