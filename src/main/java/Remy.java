@@ -25,6 +25,9 @@ public class Remy {
     /** An array list that stores the list of tasks. */
     public static ArrayList<Task> tasks = new ArrayList<>();
 
+    /** Handles messages displayed to the user. */
+    private static final Ui UI = new Ui();
+
     /** The file used to persist tasks between chatbot sessions. */
     private static final Path TASK_FILE = Path.of("./data/remy.txt");
 
@@ -34,7 +37,7 @@ public class Remy {
      */
     public static void main(String[] args) {
         loadTasks();
-        displayGreetMessage();
+        UI.showGreeting();
 
         Scanner scanner = new Scanner(System.in);
         String message = scanner.nextLine();
@@ -60,7 +63,7 @@ public class Remy {
                     case UNKNOWN -> throw new RemyException();
                 }
             } catch (RemyException e) {
-                System.out.println(e.getMessage());
+                UI.showError(e.getMessage());
             }
 
             if (canStopLoop) {
@@ -71,37 +74,7 @@ public class Remy {
         }
 
         scanner.close();
-        displayExitMessage();
-    }
-
-    /** Prints greeting message when user starts the chatbot. */
-    public static void displayGreetMessage() {
-        System.out.println(
-                """
-                        ____________________________________________________________
-                         _____                     \s
-                        |  __ \\                    \s
-                        | |__) | ___ _ __ ___  _   _
-                        |  _  / / _ \\ '_ ` _ \\| | | |
-                        | | \\ \\|  __/ | | | | | |_| |
-                        |_|  \\_\\\\___|_| |_| |_|\\__, |
-                                                __/ |
-                                               |___/\s
-                        Yo! I am Remy the rat from Ratatouille.
-                        How can I serve you today? :D
-                        
-                        ____________________________________________________________
-                        """);
-    }
-
-    /** Prints exit message when user ends the chatbot. */
-    public static void displayExitMessage() {
-        System.out.println(
-                """
-                        ____________________________________________________________
-                        Cya. Call me again when you need me!
-                        ____________________________________________________________
-                        """);
+        UI.showFarewell();
     }
 
     /**
@@ -171,13 +144,7 @@ public class Remy {
     public static void addTask(Task task) {
         tasks.add(task);
         saveTasks();
-        String result =
-                "____________________________________________________________\n"
-                        + "Okay, I have helped you create a task:\n"
-                        + task + "\n"
-                        + "Now you have " + (tasks.size()) + " task(s) in the list. Better hurry before it piles up!\n"
-                        + "____________________________________________________________\n";
-        System.out.println(result);
+        UI.showTaskAdded(task, tasks.size());
     }
 
     /**
@@ -302,11 +269,7 @@ public class Remy {
      * Each task shows its type of task, description, and whether they are done or not.
      */
     public static void listTasks() {
-        System.out.println("____________________________________________________________\n");
-        for (Task task : tasks) {
-            System.out.println((tasks.indexOf(task) + 1) + ". " + task);
-        }
-        System.out.println("____________________________________________________________\n");
+        UI.showTaskList(tasks);
     }
 
     /**
@@ -339,13 +302,7 @@ public class Remy {
         Task taskToDelete = tasks.get(formattedIndex - 1);
         tasks.remove(taskToDelete);
         saveTasks();
-        String result =
-                "____________________________________________________________\n"
-                        + "Okay, I have helped you removed a task, remember to thank me:\n"
-                        + taskToDelete + "\n"
-                        + "Now you have " + (tasks.size()) + " tasks in the list. Good luck LOL.\n"
-                        + "____________________________________________________________\n";
-        System.out.println(result);
+        UI.showTaskDeleted(taskToDelete, tasks.size());
     }
 
     /** Saves the current task list to the hard disk. */
