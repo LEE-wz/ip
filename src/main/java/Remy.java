@@ -2,9 +2,6 @@ import java.util.Scanner;
 
 import java.io.IOException;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 /**
  * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie
  * 'Ratatouille'.
@@ -17,6 +14,9 @@ public class Remy {
 
     /** Handles messages displayed to the user. */
     private static final Ui UI = new Ui();
+
+    /** Interprets user commands and their arguments. */
+    private static final Parser PARSER = new Parser();
 
     /** Loads and saves tasks between chat sessions. */
     private static final Storage STORAGE = new Storage("./data/remy.txt");
@@ -40,7 +40,7 @@ public class Remy {
                     throw new RemyException("You didn't type anything bruh D:");
                 }
 
-                CommandType commandType = CommandType.fromMessage(message);
+                CommandType commandType = PARSER.parseCommandType(message);
                 switch (commandType) {
                     case BYE -> canStopLoop = true;
                     case LIST -> listTasks();
@@ -71,23 +71,11 @@ public class Remy {
      * Marks the task specified by the user as 'done'.
      *
      * @param message Message given by user into chatbot input
-     * @throws RemyException If task index is omitted or invalid (out of range)
-     * @throws NumberFormatException If task index given is not an integer
+     * @throws RemyException If task index is omitted, invalid, or out of range
      */
     public static void markTaskAsDone(String message) {
 
-        if (message.strip().length() == 4) {
-            throw new RemyException("you forgot which task to mark as done -_-.");
-        }
-
-        int formattedIndex;
-        try {
-            String idx = message.substring(4).strip();
-            formattedIndex = Integer.parseInt(idx);
-
-        } catch (NumberFormatException e) {
-            throw new RemyException("you have to put an integer :0");
-        }
+        int formattedIndex = PARSER.parseTaskIndex(message, CommandType.MARK);
 
         if (formattedIndex > tasks.size() || formattedIndex < 1) {
             throw new RemyException("your index is out of range :/");
@@ -101,22 +89,10 @@ public class Remy {
      * Marks the task specified by the user as 'undone'.
      *
      * @param message Message given by user into chatbot input
-     * @throws RemyException If task index is omitted or invalid (out of range)
-     * @throws NumberFormatException If task index given is not an integer
+     * @throws RemyException If task index is omitted, invalid, or out of range
      */
     public static void markTaskAsUndone(String message) {
-        if (message.strip().length() == 6) {
-            throw new RemyException("you forgot which task to unmark as undone -_-.");
-        }
-
-        int formattedIndex;
-        try {
-            String idx = message.substring(6).strip();
-            formattedIndex = Integer.parseInt(idx);
-
-        } catch (NumberFormatException e) {
-            throw new RemyException("you have to put an integer :0");
-        }
+        int formattedIndex = PARSER.parseTaskIndex(message, CommandType.UNMARK);
 
         if (formattedIndex > tasks.size() || formattedIndex < 1) {
             throw new RemyException("your index is out of range :/");
@@ -145,13 +121,7 @@ public class Remy {
      * @throws RemyException If description is omitted
      */
     public static void addTodo(String message) {
-        if (message.strip().length() == 4) {
-            throw new RemyException(false);
-        }
-
-        String description = message.substring(4).strip();
-        Todo newTodo = new Todo(description);
-        addTask(newTodo);
+        addTask(PARSER.parseTask(message, CommandType.TODO));
     }
 
     /**
@@ -162,43 +132,7 @@ public class Remy {
      * @throws RemyException If description or deadline is omitted
      */
     public static void addDeadline(String message) {
-        if (message.length() == 8) {
-            throw new RemyException(false, false);
-        }
-
-        String[] messageSplit = message.split("/by", 0);
-
-        if (messageSplit.length == 1) {
-            throw new RemyException(true, false);
-        }
-
-        String description = messageSplit[0].substring(8).strip();
-        String deadline = messageSplit[1].strip();
-
-        boolean isMissingDescription = description.isEmpty();
-        boolean isMissingDeadline = deadline.isEmpty();
-
-        if (isMissingDescription || isMissingDeadline) {
-            throw new RemyException(!isMissingDescription, !isMissingDeadline);
-        }
-
-        LocalDateTime deadlineDateTime = DateParser.parseDateTime(deadline);
-        Deadline newDeadline = deadlineDateTime == null
-                ? null
-                : new Deadline(description, deadlineDateTime);
-
-        if (newDeadline == null) {
-            LocalDate deadlineDate = DateParser.parseDate(deadline);
-            if (deadlineDate != null) {
-                newDeadline = new Deadline(description, deadlineDate);
-            }
-        }
-
-        if (newDeadline == null) {
-            throw new RemyException(true, false);
-        }
-
-        addTask(newDeadline);
+        addTask(PARSER.parseTask(message, CommandType.DEADLINE));
     }
 
     /**
@@ -209,49 +143,7 @@ public class Remy {
      * @throws RemyException If description, or start, or end is omitted
      */
     public static void addEvent(String message) {
-        if (message.length() == 5) {
-            throw new RemyException(false, false, false);
-        }
-
-        String[] messageSplit = message.split("/from|/to", 0);
-
-        if (messageSplit.length == 1) {
-            throw new RemyException(true, false, false);
-        }
-
-        String description = messageSplit[0].substring(5).strip();
-        boolean isMissingDescription = description.isEmpty();
-
-        if (messageSplit.length == 2) {
-            boolean hasFrom = message.contains("/from");
-            boolean hasTo = message.contains("/to");
-            throw new RemyException(!isMissingDescription, hasFrom, hasTo);
-        }
-
-        String start = messageSplit[1].strip();
-        String end = messageSplit[2].strip();
-
-        boolean isMissingStart = start.isEmpty();
-        boolean isMissingEnd = end.isEmpty();
-
-        if (isMissingDescription || isMissingStart || isMissingEnd) {
-            throw new RemyException(!isMissingDescription, !isMissingStart, !isMissingEnd);
-        }
-
-        LocalDateTime startDateTime = DateParser.parseDateTime(start);
-        LocalDateTime endDateTime = DateParser.parseDateTime(end);
-        LocalDate startDate = DateParser.parseDate(start);
-        LocalDate endDate = DateParser.parseDate(end);
-
-        Event newEvent;
-        if (startDateTime != null && endDateTime != null) {
-            newEvent = new Event(description, startDateTime, endDateTime);
-        } else if (startDate != null && endDate != null) {
-            newEvent = new Event(description, startDate, endDate);
-        } else {
-            throw new RemyException(true, false, false);
-        }
-        addTask(newEvent);
+        addTask(PARSER.parseTask(message, CommandType.EVENT));
     }
 
     /**
@@ -272,18 +164,7 @@ public class Remy {
         if (tasks.isEmpty()) {
             throw new RemyException("There is no task for you to delete LOL.");
         }
-
-        if (message.strip().length() == 6) {
-            throw new RemyException("You forgot which task to delete -_-.");
-        }
-
-        int formattedIndex;
-        try {
-            String idx = message.substring(6).strip();
-            formattedIndex = Integer.parseInt(idx);
-        } catch (NumberFormatException e) {
-            throw new RemyException("You have to put an integer :0");
-        }
+        int formattedIndex = PARSER.parseTaskIndex(message, CommandType.DELETE);
 
         if (formattedIndex > tasks.size() || formattedIndex < 1) {
             throw new RemyException("Your index is out of range :/");
