@@ -1,19 +1,9 @@
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
 
 import java.io.IOException;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-
-import java.util.stream.Collectors;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 /**
  * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie
@@ -28,8 +18,8 @@ public class Remy {
     /** Handles messages displayed to the user. */
     private static final Ui UI = new Ui();
 
-    /** The file used to persist tasks between chatbot sessions. */
-    private static final Path TASK_FILE = Path.of("./data/remy.txt");
+    /** Loads and saves tasks between chat sessions. */
+    private static final Storage STORAGE = new Storage("./data/remy.txt");
 
     /**
      * The main logic of the chatbot.
@@ -192,13 +182,13 @@ public class Remy {
             throw new RemyException(!isMissingDescription, !isMissingDeadline);
         }
 
-        LocalDateTime deadlineDateTime = parseDateTime(deadline);
+        LocalDateTime deadlineDateTime = DateParser.parseDateTime(deadline);
         Deadline newDeadline = deadlineDateTime == null
                 ? null
                 : new Deadline(description, deadlineDateTime);
 
         if (newDeadline == null) {
-            LocalDate deadlineDate = parseDate(deadline);
+            LocalDate deadlineDate = DateParser.parseDate(deadline);
             if (deadlineDate != null) {
                 newDeadline = new Deadline(description, deadlineDate);
             }
@@ -248,10 +238,10 @@ public class Remy {
             throw new RemyException(!isMissingDescription, !isMissingStart, !isMissingEnd);
         }
 
-        LocalDateTime startDateTime = parseDateTime(start);
-        LocalDateTime endDateTime = parseDateTime(end);
-        LocalDate startDate = parseDate(start);
-        LocalDate endDate = parseDate(end);
+        LocalDateTime startDateTime = DateParser.parseDateTime(start);
+        LocalDateTime endDateTime = DateParser.parseDateTime(end);
+        LocalDate startDate = DateParser.parseDate(start);
+        LocalDate endDate = DateParser.parseDate(end);
 
         Event newEvent;
         if (startDateTime != null && endDateTime != null) {
@@ -306,238 +296,19 @@ public class Remy {
 
     /** Saves the current task list to the hard disk. */
     public static void saveTasks() {
-        Path temporaryFile = null;
         try {
-            Path parent = TASK_FILE.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-
-            String taskData = tasks.getTasks().stream()
-                    .map(Task::toString)
-                    .collect(Collectors.joining(System.lineSeparator()));
-
-            temporaryFile = Files.createTempFile(parent, "remy-", ".tmp");
-            Files.writeString(temporaryFile, taskData);
-
-            try {
-                Files.move(temporaryFile, TASK_FILE, StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                Files.move(temporaryFile, TASK_FILE, StandardCopyOption.REPLACE_EXISTING);
-            }
-
+            STORAGE.save(tasks);
         } catch (IOException | SecurityException e) {
-            System.out.println("Unable to save tasks to " + TASK_FILE);
-            if (temporaryFile != null) {
-                try {
-                    Files.deleteIfExists(temporaryFile);
-                } catch (IOException | SecurityException ignored) {
-                    // The original save error is more useful to the user.
-                }
-            }
+            System.out.println("Unable to save tasks to data/remy.txt");
         }
     }
 
     /** Loads saved tasks from the hard disk when the chatbot starts. */
     public static void loadTasks() {
         try {
-            if (!Files.exists(TASK_FILE)) {
-                return;
-            }
-
-            ArrayList<Task> loadedTasks = new ArrayList<>();
-            for (String line : Files.readAllLines(TASK_FILE)) {
-                Task task = parseTask(line);
-                if (task != null) {
-                    loadedTasks.add(task);
-                }
-            }
-            tasks = new TaskList(loadedTasks);
+            tasks = STORAGE.load();
         } catch (IOException | SecurityException e) {
-            System.out.println("Unable to load saved tasks from " + TASK_FILE);
+            System.out.println("Unable to load saved tasks from data/remy.txt");
         }
-    }
-
-    /**
-     * Parses a line from the saved task file and creates a corresponding Task object.
-     *
-     * @param line A line from the saved task file representing a task
-     * @return A Task object corresponding to the line, or null if the line is invalid
-     */
-    private static Task parseTask(String line) {
-        // Validate the line format before parsing
-        if (line == null || line.length() < 8 || line.charAt(0) != '[' || line.charAt(2) != ']'
-                || line.charAt(3) != '[' || (line.charAt(4) != ' ' && line.charAt(4) != 'X')
-                || line.charAt(5) != ']' || line.charAt(6) != ' ') {
-            return null;
-        }
-
-        boolean isDone = line.charAt(4) == 'X';
-        String taskDetails = line.substring(7);
-        if (taskDetails.strip().isEmpty()) {
-            return null;
-        }
-        Task task;
-
-        switch (line.charAt(1)) {
-            case 'T' -> task = new Todo(taskDetails);
-            case 'D' -> {
-                String marker = " (by: ";
-                if (!taskDetails.endsWith(")") || !taskDetails.contains(marker)) {
-                    return null;
-                }
-
-                int markerIndex = taskDetails.lastIndexOf(marker);
-                if (markerIndex == 0 || markerIndex + marker.length() == taskDetails.length() - 1) {
-                    return null;
-                }
-
-                String description = taskDetails.substring(0, markerIndex);
-                String deadline = taskDetails.substring(markerIndex + marker.length(), taskDetails.length() - 1);
-                task = parseSavedDeadline(description, deadline);
-                if (task == null) {
-                    return null;
-                }
-            }
-            case 'E' -> {
-                String startMarker = " (from: ";
-                String endMarker = " to: ";
-                if (!taskDetails.endsWith(")") || !taskDetails.contains(startMarker)
-                        || !taskDetails.contains(endMarker)) {
-                    return null;
-                }
-
-                int startIndex = taskDetails.lastIndexOf(startMarker);
-                int endIndex = taskDetails.lastIndexOf(endMarker);
-                if (endIndex < startIndex) {
-                    return null;
-                }
-                if (startIndex == 0 || startIndex + startMarker.length() == endIndex
-                        || endIndex + endMarker.length() == taskDetails.length() - 1) {
-                    return null;
-                }
-
-                String description = taskDetails.substring(0, startIndex);
-                String start = taskDetails.substring(startIndex + startMarker.length(), endIndex);
-                String end = taskDetails.substring(endIndex + endMarker.length(), taskDetails.length() - 1);
-                task = parseSavedEvent(description, start, end);
-                if (task == null) {
-                    return null;
-                }
-            }
-            default -> {
-                return null;
-            }
-        }
-
-        task.isDone = isDone;
-        return task;
-    }
-
-    /** Parses a deadline from its displayed or legacy persisted representation. 
-     * 
-     * @param description The description of the deadline
-     * @param deadline The deadline of the task in string format
-     * @return A Deadline object if parsing is successful, or null if parsing fails
-     */
-    private static Deadline parseSavedDeadline(String description, String deadline) {
-        LocalDateTime deadlineDateTime = parseDateTime(deadline);
-        if (deadlineDateTime != null) {
-            return new Deadline(description, deadlineDateTime);
-        }
-
-        LocalDate deadlineDate = parseDate(deadline);
-        if (deadlineDate != null) {
-            return new Deadline(description, deadlineDate);
-        }
-
-        return null;
-    }
-
-    /** Parses event endpoints from their displayed or legacy persisted representations. 
-     * 
-     * @param description The description of the event
-     * @param start The starting date/time of the event in string format
-     * @param end The ending date/time of the event in string format
-     * @return An Event object if parsing is successful, or null if parsing fails
-     */
-    private static Event parseSavedEvent(String description, String start, String end) {
-        LocalDateTime startDateTime = parseDateTime(start);
-        LocalDateTime endDateTime = parseDateTime(end);
-        if (startDateTime != null && endDateTime != null) {
-            return new Event(description, startDateTime, endDateTime);
-        }
-
-        LocalDate startDate = parseDate(start);
-        LocalDate endDate = parseDate(end);
-        if (startDate != null && endDate != null) {
-            return new Event(description, startDate, endDate);
-        }
-        return null;
-    }
-
-    /**
-     * Parses a date-time string into a LocalDateTime object using multiple supported formats.
-     * If the string does not match any supported format, returns null.
-     * 
-     * @param value The date-time string to parse
-     * @return A LocalDateTime object if parsing is successful, or null if parsing fails
-     */
-    private static LocalDateTime parseDateTime(String value) {
-        List<DateTimeFormatter> formatters = List.of(
-                DateTimeFormatter.ofPattern("d/M/yyyy HHmm"),
-                DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HHmm"),
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("d-M-yyyy HHmm"),
-                DateTimeFormatter.ofPattern("d-M-yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm"),
-                DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
-                DateTimeFormatter.ofPattern("yyyy-M-d HHmm"),
-                DateTimeFormatter.ofPattern("yyyy-M-d HH:mm"),
-                DateTimeFormatter.ofPattern("MMM dd yyyy HHmm"),
-                DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("dd MMM yyyy HHmm"),
-                DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"),
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        for (DateTimeFormatter formatter : formatters) {
-            try {
-                return LocalDateTime.parse(value, formatter);
-            } catch (DateTimeParseException ignored) {
-                // Try the next supported date-time format.
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Parses a date string into a LocalDate object using multiple supported formats.
-     * If the string does not match any supported format, returns null.
-     * 
-     * @param value The date string to parse
-     * @return A LocalDate object if parsing is successful, or null if parsing fails
-     */
-    private static LocalDate parseDate(String value) {
-        List<DateTimeFormatter> formatters = List.of(
-                DateTimeFormatter.ofPattern("d/M/yyyy"),
-                DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-                DateTimeFormatter.ofPattern("d-M-yyyy"),
-                DateTimeFormatter.ofPattern("dd-MM-yyyy"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-                DateTimeFormatter.ofPattern("yyyy-M-d"),
-                DateTimeFormatter.ofPattern("MMM dd yyyy"),
-                DateTimeFormatter.ofPattern("dd MMM yyyy"),
-                DateTimeFormatter.ISO_LOCAL_DATE);
-        for (DateTimeFormatter formatter : formatters) {
-            try {
-                return LocalDate.parse(value, formatter);
-            } catch (DateTimeParseException ignored) {
-                // Try the next supported date format.
-            }
-        }
-        return null;
     }
 }
