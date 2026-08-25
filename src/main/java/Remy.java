@@ -225,49 +225,15 @@ public class Remy {
             throw new RemyException(!isMissingDescription, !isMissingDeadline);
         }
 
-        Deadline newDeadline = null;
-        List<DateTimeFormatter> multiDateTimeFormatter = List.of(
-                DateTimeFormatter.ofPattern("d/M/uuuu HHmm"),
-                DateTimeFormatter.ofPattern("d/M/uuuu HH:mm"),
-                DateTimeFormatter.ofPattern("d/M/uuuu HH:mm:ss"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
-                DateTimeFormatter.ofPattern("yyyy/MM/dd HHmm"),
-                DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"),
-                DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"),
-                DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm"),
-                DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"),
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HHmm"),
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-
-        for (DateTimeFormatter formatter : multiDateTimeFormatter) {
-            try {
-                LocalDateTime deadlineDateTime = LocalDateTime.parse(deadline, formatter);
-                newDeadline = new Deadline(description, deadlineDateTime);
-                break;
-            } catch (DateTimeParseException ignored) {
-                // Try the next supported date-time format.
-            }
-        }
+        LocalDateTime deadlineDateTime = parseDateTime(deadline);
+        Deadline newDeadline = deadlineDateTime == null
+                ? null
+                : new Deadline(description, deadlineDateTime);
 
         if (newDeadline == null) {
-            List<DateTimeFormatter> dateFormatters = List.of(
-                    DateTimeFormatter.ofPattern("d/M/yyyy"),
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-                    DateTimeFormatter.ofPattern("yyyy/MM/dd"),
-                    DateTimeFormatter.ofPattern("dd-MM-yyyy"),
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            for (DateTimeFormatter formatter : dateFormatters) {
-                try {
-                    LocalDate deadlineDate = LocalDate.parse(deadline, formatter);
-                    newDeadline = new Deadline(description, deadlineDate);
-                    break;
-                } catch (DateTimeParseException ignored) {
-                    // Try the next supported date format.
-                }
+            LocalDate deadlineDate = parseDate(deadline);
+            if (deadlineDate != null) {
+                newDeadline = new Deadline(description, deadlineDate);
             }
         }
 
@@ -315,7 +281,19 @@ public class Remy {
             throw new RemyException(!isMissingDescription, !isMissingStart, !isMissingEnd);
         }
 
-        Event newEvent = new Event(description, start, end);
+        LocalDateTime startDateTime = parseDateTime(start);
+        LocalDateTime endDateTime = parseDateTime(end);
+        LocalDate startDate = parseDate(start);
+        LocalDate endDate = parseDate(end);
+
+        Event newEvent;
+        if (startDateTime != null && endDateTime != null) {
+            newEvent = new Event(description, startDateTime, endDateTime);
+        } else if (startDate != null && endDate != null) {
+            newEvent = new Event(description, startDate, endDate);
+        } else {
+            throw new RemyException(true, false, false);
+        }
         addTask(newEvent);
     }
 
@@ -484,10 +462,13 @@ public class Remy {
                     return null;
                 }
 
-                task = new Event(
-                        taskDetails.substring(0, startIndex),
-                        taskDetails.substring(startIndex + startMarker.length(), endIndex),
-                        taskDetails.substring(endIndex + endMarker.length(), taskDetails.length() - 1));
+                String description = taskDetails.substring(0, startIndex);
+                String start = taskDetails.substring(startIndex + startMarker.length(), endIndex);
+                String end = taskDetails.substring(endIndex + endMarker.length(), taskDetails.length() - 1);
+                task = parseSavedEvent(description, start, end);
+                if (task == null) {
+                    return null;
+                }
             }
             default -> {
                 return null;
@@ -498,7 +479,12 @@ public class Remy {
         return task;
     }
 
-    /** Parses a deadline from its displayed or legacy persisted representation. */
+    /** Parses a deadline from its displayed or legacy persisted representation. 
+     * 
+     * @param description The description of the deadline
+     * @param deadline The deadline of the task in string format
+     * @return A Deadline object if parsing is successful, or null if parsing fails
+     */
     private static Deadline parseSavedDeadline(String description, String deadline) {
         List<DateTimeFormatter> dateTimeFormatters = List.of(
                 DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm"),
@@ -517,6 +503,92 @@ public class Remy {
         for (DateTimeFormatter formatter : dateFormatters) {
             try {
                 return new Deadline(description, LocalDate.parse(deadline, formatter));
+            } catch (DateTimeParseException ignored) {
+                // Try the next supported date format.
+            }
+        }
+        return null;
+    }
+
+    /** Parses event endpoints from their displayed or legacy persisted representations. 
+     * 
+     * @param description The description of the event
+     * @param start The starting date/time of the event in string format
+     * @param end The ending date/time of the event in string format
+     * @return An Event object if parsing is successful, or null if parsing fails
+     */
+    private static Event parseSavedEvent(String description, String start, String end) {
+        LocalDateTime startDateTime = parseDateTime(start);
+        LocalDateTime endDateTime = parseDateTime(end);
+        if (startDateTime != null && endDateTime != null) {
+            return new Event(description, startDateTime, endDateTime);
+        }
+
+        LocalDate startDate = parseDate(start);
+        LocalDate endDate = parseDate(end);
+        if (startDate != null && endDate != null) {
+            return new Event(description, startDate, endDate);
+        }
+        return null;
+    }
+
+    /**
+     * Parses a date-time string into a LocalDateTime object using multiple supported formats.
+     * If the string does not match any supported format, returns null.
+     * 
+     * @param value The date-time string to parse
+     * @return A LocalDateTime object if parsing is successful, or null if parsing fails
+     */
+    private static LocalDateTime parseDateTime(String value) {
+        List<DateTimeFormatter> formatters = List.of(
+                DateTimeFormatter.ofPattern("d/M/yyyy HHmm"),
+                DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HHmm"),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("d-M-yyyy HHmm"),
+                DateTimeFormatter.ofPattern("d-M-yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy-M-d HHmm"),
+                DateTimeFormatter.ofPattern("yyyy-M-d HH:mm"),
+                DateTimeFormatter.ofPattern("MMM dd yyyy HHmm"),
+                DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("dd MMM yyyy HHmm"),
+                DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"),
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDateTime.parse(value, formatter);
+            } catch (DateTimeParseException ignored) {
+                // Try the next supported date-time format.
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parses a date string into a LocalDate object using multiple supported formats.
+     * If the string does not match any supported format, returns null.
+     * 
+     * @param value The date string to parse
+     * @return A LocalDate object if parsing is successful, or null if parsing fails
+     */
+    private static LocalDate parseDate(String value) {
+        List<DateTimeFormatter> formatters = List.of(
+                DateTimeFormatter.ofPattern("d/M/yyyy"),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                DateTimeFormatter.ofPattern("d-M-yyyy"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                DateTimeFormatter.ofPattern("yyyy-M-d"),
+                DateTimeFormatter.ofPattern("MMM dd yyyy"),
+                DateTimeFormatter.ofPattern("dd MMM yyyy"),
+                DateTimeFormatter.ISO_LOCAL_DATE);
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDate.parse(value, formatter);
             } catch (DateTimeParseException ignored) {
                 // Try the next supported date format.
             }
