@@ -310,6 +310,7 @@ public class Remy {
     }
 
     /**
+     * Deletes a task specified by the user from the list of tasks
      *
      * @param message Message given by user into chatbot input
      * @throws RemyException If there are zero tasks, task index is omitted or invalid (out of range)
@@ -486,27 +487,16 @@ public class Remy {
      * @return A Deadline object if parsing is successful, or null if parsing fails
      */
     private static Deadline parseSavedDeadline(String description, String deadline) {
-        List<DateTimeFormatter> dateTimeFormatters = List.of(
-                DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm"),
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        for (DateTimeFormatter formatter : dateTimeFormatters) {
-            try {
-                return new Deadline(description, LocalDateTime.parse(deadline, formatter));
-            } catch (DateTimeParseException ignored) {
-                // Try the next supported date-time format.
-            }
+        LocalDateTime deadlineDateTime = parseDateTime(deadline);
+        if (deadlineDateTime != null) {
+            return new Deadline(description, deadlineDateTime);
         }
 
-        List<DateTimeFormatter> dateFormatters = List.of(
-                DateTimeFormatter.ofPattern("MMM dd uuuu"),
-                DateTimeFormatter.ISO_LOCAL_DATE);
-        for (DateTimeFormatter formatter : dateFormatters) {
-            try {
-                return new Deadline(description, LocalDate.parse(deadline, formatter));
-            } catch (DateTimeParseException ignored) {
-                // Try the next supported date format.
-            }
+        LocalDate deadlineDate = parseDate(deadline);
+        if (deadlineDate != null) {
+            return new Deadline(description, deadlineDate);
         }
+
         return null;
     }
 
@@ -595,6 +585,4 @@ public class Remy {
         }
         return null;
     }
-
-    
 }
