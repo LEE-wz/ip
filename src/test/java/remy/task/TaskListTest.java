@@ -12,9 +12,14 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Tests the task collection operations provided by {@link TaskList}.
+ *
+ * @author LEE-wz
  */
 class TaskListTest {
 
+    /**
+     * Tests that the constructor creates an empty task list when no arguments are provided.
+     */
     @Test
     void constructor_noArguments_emptyTaskListCreated() {
         TaskList taskList = new TaskList();
@@ -23,6 +28,9 @@ class TaskListTest {
         assertEquals(0, taskList.size());
     }
 
+    /**
+     * Tests that the constructor creates a task list containing the provided tasks, and that subsequent changes to the source list do not affect the task list.
+     */
     @Test
     void constructor_initialTasksSourceListChanges_taskListRemainsUnchanged() {
         Task firstTask = new Todo("Read book");
@@ -35,6 +43,9 @@ class TaskListTest {
         assertEquals(firstTask, taskList.get(0));
     }
 
+    /**
+     * Tests that adding a task to the task list appends it to the end and increases the size of the list.
+     */
     @Test
     void add_task_taskAppendedAndSizeIncreases() {
         Task task = new Todo("Read book");
@@ -47,6 +58,9 @@ class TaskListTest {
         assertEquals(task, taskList.get(0));
     }
 
+    /**
+     * Tests that retrieving a task by a valid index returns the corresponding task.
+     */
     @Test
     void get_validIndex_correspondingTaskReturned() {
         Task firstTask = new Todo("Read book");
@@ -56,6 +70,9 @@ class TaskListTest {
         assertEquals(secondTask, taskList.get(1));
     }
 
+    /**
+     * Tests that retrieving a task by an invalid index throws an IndexOutOfBoundsException.
+     */
     @Test
     void remove_middleTask_removedTaskReturnedAndRemainingTasksRetainOrder() {
         Task firstTask = new Todo("Read book");
@@ -70,6 +87,9 @@ class TaskListTest {
         assertIterableEquals(List.of(firstTask, lastTask), taskList.getTasks());
     }
 
+    /**
+     * Tests that removing the only task from the task list results in an empty list.
+     */
     @Test
     void isEmpty_onlyTaskRemoved_taskListBecomesEmpty() {
         TaskList taskList = new TaskList(List.of(new Todo("Read book")));
@@ -79,6 +99,9 @@ class TaskListTest {
         assertTrue(taskList.isEmpty());
     }
 
+    /**
+     * Tests that the getTasks method returns an unmodifiable snapshot of the current tasks in the task list.
+     */
     @Test
     void getTasks_emptyTaskList_emptyUnmodifiableListReturned() {
         List<Task> tasks = new TaskList().getTasks();
@@ -87,6 +110,9 @@ class TaskListTest {
         assertThrows(UnsupportedOperationException.class, () -> tasks.add(new Todo("Read book")));
     }
 
+    /**
+     * Tests that the getTasks method returns the tasks in the order they were added to the task list.
+     */
     @Test
     void getTasks_taskListContainsTasks_tasksReturnedInAdditionOrder() {
         Task firstTask = new Todo("Read book");
@@ -100,6 +126,9 @@ class TaskListTest {
         assertIterableEquals(List.of(firstTask, secondTask), tasks);
     }
 
+    /**
+     * Tests that the getTasks method returns a snapshot of the task list that does not change when the task list is modified after the snapshot is taken.
+     */
     @Test
     void getTasks_taskListChangesAfterSnapshot_snapshotRemainsUnchanged() {
         Task firstTask = new Todo("Read book");

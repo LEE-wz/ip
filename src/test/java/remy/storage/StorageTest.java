@@ -21,11 +21,21 @@ import remy.task.Todo;
 
 /**
  * Tests task-file persistence through {@link Storage}.
+ *
+ * @author LEE-wz
  */
 class StorageTest {
+    /**
+     * Temporary directory provided by JUnit for creating temporary files during tests.
+     */
     @TempDir
     Path temporaryDirectory;
 
+    /**
+     * Tests that the load method returns an empty task list when the task file does not exist.
+     *
+     * @throws IOException if an I/O error occurs during the test
+     */
     @Test
     void load_taskFileDoesNotExist_emptyTaskListReturned() throws IOException {
         Storage storage = new Storage(temporaryDirectory.resolve("tasks.txt").toString());
@@ -35,6 +45,11 @@ class StorageTest {
         assertTrue(loadedTasks.isEmpty());
     }
 
+    /**
+     * Tests that the save and load methods correctly persist and retrieve tasks of all types, preserving their completion status.
+     *
+     * @throws IOException if an I/O error occurs during the test
+     */
     @Test
     void saveAndLoad_tasksOfAllTypes_tasksAndCompletionStatusPreserved() throws IOException {
         Task todo = new Todo("Read book");
@@ -54,6 +69,11 @@ class StorageTest {
                 loadedTasks.getTasks().stream().map(Task::toString).toList());
     }
 
+    /**
+     * Tests that the load method ignores invalid lines in the task file and only loads valid tasks.
+     *
+     * @throws IOException if an I/O error occurs during the test
+     */
     @Test
     void load_taskFileContainsInvalidLines_invalidLinesIgnored() throws IOException {
         Path taskFile = temporaryDirectory.resolve("tasks.txt");

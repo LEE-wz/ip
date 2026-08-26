@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * Stores and provides operations on the tasks managed by Remy.
+ *
+ * @author LEE-wz
  */
 public class TaskList {
     /** The tasks in the order they were added. */

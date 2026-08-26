@@ -8,6 +8,8 @@ import remy.ui.Ui;
 
 /**
  * Deletes a task at a user-provided one-based index.
+ *
+ * @author LEE-wz
  */
 public class DeleteCommand extends Command {
     /** One-based index of the task to delete. */
@@ -22,6 +24,13 @@ public class DeleteCommand extends Command {
         this.taskIndex = taskIndex;
     }
 
+    /**
+     * Deletes task from tasklist, saves it, and show the remaining number of tasks
+     *
+     * @param tasks task collection to operate on
+     * @param ui user interface used to display results
+     * @param storage persistence service used to save changes
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         if (tasks.isEmpty()) {
