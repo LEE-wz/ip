@@ -34,6 +34,9 @@ Maintain JUnit coverage for approximately the top 50% highest-value methods, pri
 
 ## Git
 
+For every future commit, use the `seedu-git-standard` skill at
+`/Users/lwz/.codex/skills/seedu-git-standard`. Its SE-EDU rules for commit messages and branch names are mandatory.
+
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
