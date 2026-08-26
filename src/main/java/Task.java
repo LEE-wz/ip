@@ -30,28 +30,14 @@ public class Task {
         return (isDone ? "X" : " "); // mark done task with X
     }
 
-    /**
-     * Marks this task as done and prints the success message for the user.
-     */
+    /** Marks this task as done. */
     public void markAsDone() {
         this.isDone = true;
-
-        System.out.println("____________________________________________________________\n");
-        System.out.println(" Nice! I've marked this task as done:\n");
-        System.out.println(this.toString());
-        System.out.println("____________________________________________________________\n");
     }
 
-    /**
-     * Marks this task as undone and prints the success message for the user.
-     */
+    /** Marks this task as undone. */
     public void markAsUndone() {
         this.isDone = false;
-
-        System.out.println("____________________________________________________________\n");
-        System.out.println(" OK, I've marked this task as not done yet:\n");
-        System.out.println(this.toString());
-        System.out.println("____________________________________________________________\n");
     }
 
     /**
