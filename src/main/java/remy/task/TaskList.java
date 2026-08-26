@@ -2,6 +2,7 @@ package remy.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Stores and provides operations on the tasks managed by Remy.
@@ -69,6 +70,19 @@ public class TaskList {
      */
     public boolean isEmpty() {
         return tasks.isEmpty();
+    }
+
+    /**
+     * Returns tasks whose descriptions contain the given keyword, regardless of letter case.
+     *
+     * @param keyword keyword to search for
+     * @return matching tasks in their current order
+     */
+    public List<Task> find(String keyword) {
+        String lowercaseKeyword = keyword.toLowerCase(Locale.ROOT);
+        return tasks.stream()
+                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(lowercaseKeyword))
+                .toList();
     }
 
     /**
