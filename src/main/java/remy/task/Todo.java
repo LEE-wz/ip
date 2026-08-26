@@ -1,25 +1,23 @@
 package remy.task;
 
 /**
- * This class encapsulates a To/do task
- *
- * @author LEE-wz
+ * Represents a task without a deadline or event period.
  */
-public class Todo extends Task{
+public class Todo extends Task {
 
     /**
-     * Constructor for a To/do task
+     * Creates a to-do task with the given description.
      *
-     * @param description The description of this To/do task
+     * @param description Description supplied by the user.
      */
     public Todo(String description) {
         super(description);
     }
 
     /**
-     * Returns the string representation of the To/do task
+     * Returns this to-do task's display representation.
      *
-     * @return A string representing the task
+     * @return A string representing this task.
      */
     @Override
     public String toString() {

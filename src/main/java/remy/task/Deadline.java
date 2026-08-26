@@ -5,11 +5,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * This class encapsulates a Deadline task
- *
- * @author LEE-wz
+ * Represents a task with a deadline.
  */
-public class Deadline extends Task{
+public class Deadline extends Task {
 
     /** Format used when displaying date-only deadlines. */
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
@@ -19,38 +17,38 @@ public class Deadline extends Task{
     private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMATTER =
         DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
 
-    /** Date or time that this deadline task has to be finished in LocalDate format */
-    protected LocalDate byDate;
+    /** Date-only deadline, when the deadline has no time. */
+    private final LocalDate byDate;
 
-    /** Date or time that this deadline task has to be finished in LocalDateTime format */
-    protected LocalDateTime byDateTime;
+    /** Date-time deadline, when the deadline includes a time. */
+    private final LocalDateTime byDateTime;
 
     /**
-     * Constructor for a Deadline task
+     * Creates a deadline with a date-only endpoint.
      *
-     * @param description The description of this Deadline task
-     * @param byDate The deadline of this Deadline task in LocalDate format
+     * @param description Description supplied by the user.
+     * @param byDate Date on which the task is due.
      */
     public Deadline(String description, LocalDate byDate) {
         this(description, byDate, null);
     }
 
     /**
-     * Constructor for a Deadline task
+     * Creates a deadline with a date-time endpoint.
      *
-     * @param description The description of this Deadline task
-     * @param byDateTime The deadline of this Deadline task in LocalDateTime format
+     * @param description Description supplied by the user.
+     * @param byDateTime Date and time at which the task is due.
      */
     public Deadline(String description, LocalDateTime byDateTime) {
         this(description, null, byDateTime);
     }
 
     /**
-     * Master constructor for a Deadline Task
+     * Creates a deadline with its available endpoint representation.
      *
-     * @param description The description of this Deadline task
-     * @param byDate The deadline of this Deadline task in LocalDate format
-     * @param byDateTime The deadline of this Deadline task in LocalDateTime format
+     * @param description Description supplied by the user.
+     * @param byDate Date on which the task is due, if known.
+     * @param byDateTime Date and time at which the task is due, if known.
      */
     public Deadline(String description, LocalDate byDate, LocalDateTime byDateTime) {
         super(description);
@@ -65,15 +63,14 @@ public class Deadline extends Task{
      */
     @Override
     public String toString() {
-        String strFormat = "[D]" + super.toString() + " (by: ";
+        String display = "[D]" + super.toString() + " (by: ";
 
-        if (this.byDateTime != null) {
-            strFormat += this.byDateTime.format(DATE_TIME_DISPLAY_FORMATTER);
-        } else if (this.byDate != null) {
-            strFormat += this.byDate.format(DATE_DISPLAY_FORMATTER);
+        if (byDateTime != null) {
+            display += byDateTime.format(DATE_TIME_DISPLAY_FORMATTER);
+        } else if (byDate != null) {
+            display += byDate.format(DATE_DISPLAY_FORMATTER);
         }
 
-        strFormat += ')';
-        return strFormat;
+        return display + ')';
     }
 }

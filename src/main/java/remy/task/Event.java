@@ -5,11 +5,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * This class encapsulates an Event task
- *
- * @author LEE-wz
+ * Represents a task that occurs over a period.
  */
-public class Event extends Task{
+public class Event extends Task {
 
     /** Format used when displaying date-only event endpoints. */
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
@@ -19,48 +17,51 @@ public class Event extends Task{
     private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMATTER =
         DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
 
-    /** The starting date/time of this Event task in LocalDate format */
-    protected LocalDate startDate;
+    /** Date-only start endpoint, when the event has no times. */
+    private final LocalDate startDate;
 
-    /** The starting date/time of this Event task in LocalDateTime format */
-    protected LocalDateTime startDateTime;
+    /** Date-time start endpoint, when the event includes times. */
+    private final LocalDateTime startDateTime;
 
-    /** The ending date/time of this Event task in LocalDate format */
-    protected LocalDate endDate;
+    /** Date-only end endpoint, when the event has no times. */
+    private final LocalDate endDate;
 
-    /** The ending date/time of this Event task in LocalDateTime format */
-    protected LocalDateTime endDateTime;
+    /** Date-time end endpoint, when the event includes times. */
+    private final LocalDateTime endDateTime;
 
-    /** Creates an event with date-only endpoints. 
-     * 
-     * @param description The description of this Event task
-     * @param startDate The starting date of this Event task in LocalDate format
-     * @param endDate The ending date of this Event task in LocalDate format
+    /**
+     * Creates an event with date-only endpoints.
+     *
+     * @param description Description supplied by the user.
+     * @param startDate Date on which the event starts.
+     * @param endDate Date on which the event ends.
      */
     public Event(String description, LocalDate startDate, LocalDate endDate) {
         this(description, startDate, endDate, null, null);
     }
 
-    /** 
+    /**
      * Creates an event with date-time endpoints.
-     * 
-     * @param description The description of this Event task
-     * @param startDateTime The starting date/time of this Event task in LocalDateTime
-     * @param endDateTime The ending date/time of this Event task in LocalDateTime
+     *
+     * @param description Description supplied by the user.
+     * @param startDateTime Date and time at which the event starts.
+     * @param endDateTime Date and time at which the event ends.
      */
     public Event(String description, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         this(description, null, null, startDateTime, endDateTime);
     }
 
     /**
-     * Master Constructor for an Event task
-     * @param description The description of this Event task
-     * @param startDate The starting date/time of this Event task in LocalDate format
-     * @param endDate The ending date/time of this Event task in LocalDate format
-     * @param startDateTime The starting date/time of this Event task in LocalDateTime format
-     * @param endDateTime The ending date/time of this Event task in LocalDateTime format
+     * Creates an event with its available endpoint representation.
+     *
+     * @param description Description supplied by the user.
+     * @param startDate Date on which the event starts, if known.
+     * @param endDate Date on which the event ends, if known.
+     * @param startDateTime Date and time at which the event starts, if known.
+     * @param endDateTime Date and time at which the event ends, if known.
      */
-    public Event(String description, LocalDate startDate, LocalDate endDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public Event(String description, LocalDate startDate, LocalDate endDate,
+            LocalDateTime startDateTime, LocalDateTime endDateTime) {
         super(description);
         this.startDate = startDate;
         this.endDate = endDate;
@@ -69,10 +70,11 @@ public class Event extends Task{
     }
 
     /**
-     * Formats the given date or date-time into a string for display purposes.
-     * @param date The date to format
-     * @param dateTime The date-time to format
-     * @return A string representation of the date or date-time
+     * Returns the display representation of an event endpoint.
+     *
+     * @param date Date-only endpoint, if available.
+     * @param dateTime Date-time endpoint, if available.
+     * @return The endpoint's display representation.
      */
     private static String formatEndpoint(LocalDate date, LocalDateTime dateTime) {
         if (dateTime != null) {
@@ -82,17 +84,17 @@ public class Event extends Task{
     }
 
     /**
-     * Returns the string representation of the Event task
+     * Returns this event's display representation.
      *
-     * @return A string representing the task
+     * @return A string representing this task.
      */
     @Override
     public String toString() {
-        String strFormat = "[E]" + super.toString() + " (from: ";
+        String display = "[E]" + super.toString() + " (from: ";
 
-        strFormat += formatEndpoint(this.startDate, this.startDateTime);
-        strFormat += " to: ";
-        strFormat += formatEndpoint(this.endDate, this.endDateTime);
-        return strFormat + ")";
+        display += formatEndpoint(startDate, startDateTime);
+        display += " to: ";
+        display += formatEndpoint(endDate, endDateTime);
+        return display + ")";
     }
 }

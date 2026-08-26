@@ -1,21 +1,19 @@
 package remy.task;
 
 /**
- * The Task class is a public class that encapsulates a task to be completed by the user.
- *
- * @author LEE-wz
+ * Represents a task that the user can complete.
  */
 public class Task {
-    /** The description of the task */
+    /** Description supplied for this task. */
     protected String description;
 
-    /** The state of the task whether it is done or not */
+    /** Whether this task has been completed. */
     protected boolean isDone;
 
     /**
-     * Creates a task with the given description, and it is automatically marked as undone.
+     * Creates an incomplete task with the given description.
      *
-     * @param description Description of the task specified by user
+     * @param description Description supplied by the user.
      */
     public Task(String description) {
         this.description = description;
@@ -23,13 +21,12 @@ public class Task {
     }
 
     /**
-     * Returns the status icon of the task based on whether it is done or not.
+     * Returns this task's completion status icon.
      *
-     * @return 'X' if this task is done
-     *         ' ' if this task is not done
+     * @return `X` when this task is complete, or a space otherwise.
      */
     public String getStatusIcon() {
-        return (isDone ? "X" : " "); // mark done task with X
+        return isDone ? "X" : " ";
     }
 
     /** Marks this task as done. */
@@ -43,12 +40,12 @@ public class Task {
     }
 
     /**
-     * Return the string representation of this task
+     * Returns this task's display representation.
      *
-     * @return A string consisting of its status icon and description
+     * @return A string containing the status icon and description.
      */
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + this.description;
+        return "[" + getStatusIcon() + "] " + description;
     }
 }

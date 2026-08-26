@@ -10,10 +10,7 @@ import remy.task.TaskList;
 import remy.ui.Ui;
 
 /**
- * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie
- * 'Ratatouille'.
- *
- * @author LEE-wz
+ * Runs Remy's command-line task-management application.
  */
 public class Remy {
     /** Stores the tasks managed during this chat session. */
@@ -32,9 +29,9 @@ public class Remy {
     public static void main(String[] args) {
         loadTasks();
         UI.showGreeting();
-        boolean canStopLoop = false;
+        boolean shouldExit = false;
 
-        while (!canStopLoop) {
+        while (!shouldExit) {
             try {
                 String message = UI.readCommand();
                 if (message == null) {
@@ -43,7 +40,7 @@ public class Remy {
 
                 Command command = PARSER.parse(message);
                 command.execute(tasks, UI, STORAGE);
-                canStopLoop = command.isExit();
+                shouldExit = command.isExit();
             } catch (RemyException e) {
                 UI.showError(e.getMessage());
             }
