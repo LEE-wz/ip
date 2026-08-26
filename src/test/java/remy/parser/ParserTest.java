@@ -24,11 +24,19 @@ import remy.ui.Ui;
 
 /**
  * Tests conversion of user input into commands and resulting task changes.
+ *
+ * @author LEE-wz
  */
 class ParserTest {
+    /**
+     * A temporary directory for storing test data.
+     */
     @TempDir
     Path temporaryDirectory;
 
+    /**
+     * Tests that the parse method correctly converts user input into the expected command types.
+     */
     @Test
     void parse_exitAndListCommands_expectedCommandTypesReturned() {
         Parser parser = new Parser();
@@ -42,6 +50,9 @@ class ParserTest {
         assertFalse(listCommand.isExit());
     }
 
+    /**
+     * Tests that the parse method correctly converts task creation commands into the expected tasks added to the task list.
+     */
     @Test
     void parse_taskCreationCommands_expectedTasksAdded() {
         Parser parser = new Parser();
@@ -58,6 +69,9 @@ class ParserTest {
                 tasks.getTasks().stream().map(Task::toString).toList());
     }
 
+    /**
+     * Tests that the parse method correctly converts index-based commands into the expected task changes in the task list.
+     */
     @Test
     void parse_indexCommands_expectedTaskChangesApplied() {
         Parser parser = new Parser();
@@ -73,6 +87,9 @@ class ParserTest {
         assertTrue(tasks.isEmpty());
     }
 
+    /**
+     * Tests that the parse method throws a RemyException for unknown or invalid commands.
+     */
     @Test
     void parse_unknownOrInvalidCommands_remyExceptionThrown() {
         Parser parser = new Parser();

@@ -10,9 +10,14 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Tests date and date-time formats accepted from user input and saved task data.
+ *
+ * @author LEE-wz
  */
 class DateParserTest {
 
+    /**
+     * Tests that the parseDateTime method correctly parses supported date-time formats and returns the expected LocalDateTime object. It also tests that invalid or date-only inputs return null.
+     */
     @Test
     void parseDateTime_supportedNumericAndTextFormats_correctDateTimeReturned() {
         assertEquals(LocalDateTime.of(2026, 8, 23, 14, 30),
@@ -23,12 +28,18 @@ class DateParserTest {
                 DateParser.parseDateTime("2026-08-23T14:30"));
     }
 
+    /**
+     * Tests that the parseDateTime method returns null for invalid or date-only inputs.
+     */
     @Test
     void parseDateTime_invalidOrDateOnlyInput_nullReturned() {
         assertNull(DateParser.parseDateTime("23/8/2026"));
         assertNull(DateParser.parseDateTime("not a date"));
     }
 
+    /**
+     * Tests that the parseDate method correctly parses supported date formats and returns the expected LocalDate object. It also tests that invalid or date-time inputs return null.
+     */
     @Test
     void parseDate_supportedNumericAndTextFormats_correctDateReturned() {
         assertEquals(LocalDate.of(2026, 8, 23), DateParser.parseDate("23/8/2026"));
@@ -36,6 +47,9 @@ class DateParserTest {
         assertEquals(LocalDate.of(2026, 8, 23), DateParser.parseDate("2026-08-23"));
     }
 
+    /**
+     * Tests that the parseDate method returns null for invalid or date-time inputs.
+     */
     @Test
     void parseDate_invalidOrDateTimeInput_nullReturned() {
         assertNull(DateParser.parseDate("23/8/2026 1430"));

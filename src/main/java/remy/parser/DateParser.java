@@ -8,6 +8,8 @@ import java.util.List;
 
 /**
  * Parses dates and date-times written in the formats supported by Remy.
+ *
+ * @author LEE-wz
  */
 public final class DateParser {
     /** Supported date-time input formats. */

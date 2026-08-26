@@ -8,6 +8,8 @@ import remy.ui.Ui;
 
 /**
  * Represents an action requested by the user.
+ *
+ * @author LEE-wz
  */
 public abstract class Command {
 

@@ -7,6 +7,8 @@ import remy.task.Task;
 
 /**
  * Handles all messages shown to the user by the Remy application.
+ *
+ * @author LEE-wz
  */
 public class Ui {
     /** Reads commands entered through the console. */

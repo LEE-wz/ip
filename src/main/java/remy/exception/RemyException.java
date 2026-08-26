@@ -1,8 +1,15 @@
 package remy.exception;
 
+/**
+ * This is a custom runtime exception for error handling when using the chatbot.
+ *
+ * @author LEE-wz
+ */
 public class RemyException extends RuntimeException{
 
-    // Invalid keyword
+    /**
+     * Create this exception for commands not understandable by Remy
+     */
     public RemyException() {
         String message = "____________________________________________________________\n";
         message += "Wha-? My bad bruh, I have no clue what you're talking about :/\n";
@@ -10,6 +17,9 @@ public class RemyException extends RuntimeException{
         super(message);
     }
 
+    /**
+     * Create this exception for any error message
+     */
     public RemyException(String msg) {
         String message  = "____________________________________________________________\n";
         message += msg + "\n";
@@ -17,7 +27,9 @@ public class RemyException extends RuntimeException{
         super(message);
     }
 
-    // Invalid todo task
+    /**
+     * Create this exception for an invalid todo task
+     */
     public RemyException(boolean hasDescription) {
         String message = "____________________________________________________________\n";
         message += "Bruh :/, you need to fill in the description of your todo task, unless you're doing nothing :/.\n";
@@ -27,7 +39,9 @@ public class RemyException extends RuntimeException{
         super(message);
     }
 
-    // Invalid deadline task
+    /**
+     * Create this exception for an invalid deadline task
+     */
     public RemyException(boolean hasDescription, boolean hasDeadline) {
         String message = "____________________________________________________________\n";
         message += "Bruh :/, your deadline task is missing the following: \n";
@@ -46,7 +60,9 @@ public class RemyException extends RuntimeException{
         super(message);
     }
 
-    // Invalid event task
+    /**
+     * Create this exception for an invalid event task
+     */
     public RemyException(boolean hasDescription, boolean hasStart, boolean hasEnd) {
         String message = "____________________________________________________________\n";
         message += "Bruh :/, your event task is missing the following: \n";
