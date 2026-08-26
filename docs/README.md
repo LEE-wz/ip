@@ -20,6 +20,21 @@ Example: `keyword (optional arguments)`
 expected output
 ```
 
+## Finding tasks
+
+Use `find KEYWORD` to show all tasks whose descriptions contain `KEYWORD`. The search is case-insensitive.
+
+Example: `find book`
+
+```
+____________________________________________________________
+
+Here are the matching tasks in your list:
+1.[T][X] read book
+2.[D][X] return book (by: June 6th)
+____________________________________________________________
+```
+
 ## Feature ABC
 
 // Feature details

@@ -7,6 +7,7 @@ import remy.command.AddCommand;
 import remy.command.Command;
 import remy.command.DeleteCommand;
 import remy.command.ExitCommand;
+import remy.command.FindCommand;
 import remy.command.ListCommand;
 import remy.command.MarkCommand;
 import remy.exception.RemyException;
@@ -34,6 +35,7 @@ public class Parser {
         return switch (commandType) {
             case BYE -> new ExitCommand();
             case LIST -> new ListCommand();
+            case FIND -> new FindCommand(parseFindKeyword(message));
             case DELETE -> new DeleteCommand(parseTaskIndex(message, commandType));
             case MARK -> new MarkCommand(parseTaskIndex(message, commandType), true);
             case UNMARK -> new MarkCommand(parseTaskIndex(message, commandType), false);
@@ -59,6 +61,10 @@ public class Parser {
         if (message.equals("list")) {
             return CommandType.LIST;
         }
+        if (message.equals("find") || (message.startsWith("find")
+                && Character.isWhitespace(message.charAt("find".length())))) {
+            return CommandType.FIND;
+        }
         if (message.startsWith("delete")) {
             return CommandType.DELETE;
         }
@@ -79,6 +85,21 @@ public class Parser {
         }
 
         return CommandType.UNKNOWN;
+    }
+
+    /**
+     * Parses the keyword supplied to a find command.
+     *
+     * @param message user message containing the keyword
+     * @return the search keyword
+     * @throws RemyException if no keyword is supplied
+     */
+    private String parseFindKeyword(String message) {
+        String keyword = message.substring("find".length()).strip();
+        if (keyword.isEmpty()) {
+            throw new RemyException("You need to provide a keyword to find.");
+        }
+        return keyword;
     }
 
     /**

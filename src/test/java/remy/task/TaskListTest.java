@@ -103,6 +103,25 @@ class TaskListTest {
      * Tests that the getTasks method returns an unmodifiable snapshot of the current tasks in the task list.
      */
     @Test
+    void find_matchingKeywordIgnoringCase_matchingTasksReturnedInListOrder() {
+        Task firstMatch = new Todo("Read book");
+        Task nonMatch = new Todo("Submit assignment");
+        Task secondMatch = new Todo("Return BOOK");
+        TaskList taskList = new TaskList(List.of(firstMatch, nonMatch, secondMatch));
+
+        List<Task> matches = taskList.find("bOoK");
+
+        assertIterableEquals(List.of(firstMatch, secondMatch), matches);
+    }
+
+    @Test
+    void find_noMatchingKeyword_emptyListReturned() {
+        TaskList taskList = new TaskList(List.of(new Todo("Read book")));
+
+        assertTrue(taskList.find("assignment").isEmpty());
+    }
+
+    @Test
     void getTasks_emptyTaskList_emptyUnmodifiableListReturned() {
         List<Task> tasks = new TaskList().getTasks();
 
