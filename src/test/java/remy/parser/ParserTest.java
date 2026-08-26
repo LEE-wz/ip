@@ -14,6 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import remy.command.Command;
 import remy.command.ExitCommand;
+import remy.command.FindCommand;
 import remy.command.ListCommand;
 import remy.exception.RemyException;
 import remy.storage.Storage;
@@ -30,16 +31,19 @@ class ParserTest {
     Path temporaryDirectory;
 
     @Test
-    void parse_exitAndListCommands_expectedCommandTypesReturned() {
+    void parse_exitListAndFindCommands_expectedCommandTypesReturned() {
         Parser parser = new Parser();
 
         Command exitCommand = parser.parse("bye");
         Command listCommand = parser.parse("list");
+        Command findCommand = parser.parse("find book");
 
         assertInstanceOf(ExitCommand.class, exitCommand);
         assertTrue(exitCommand.isExit());
         assertInstanceOf(ListCommand.class, listCommand);
         assertFalse(listCommand.isExit());
+        assertInstanceOf(FindCommand.class, findCommand);
+        assertFalse(findCommand.isExit());
     }
 
     @Test
@@ -82,6 +86,7 @@ class ParserTest {
         assertThrows(RemyException.class, () -> parser.parse("deadline submit /by tomorrow"));
         assertThrows(RemyException.class, () -> parser.parse("event meeting /from 23/8/2026"));
         assertThrows(RemyException.class, () -> parser.parse("mark one"));
+        assertThrows(RemyException.class, () -> parser.parse("find"));
     }
 
     /** Executes a parsed command using isolated persistence for the test. */
