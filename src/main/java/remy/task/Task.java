@@ -1,3 +1,5 @@
+package remy.task;
+
 /**
  * The Task class is a public class that encapsulates a task to be completed by the user.
  *

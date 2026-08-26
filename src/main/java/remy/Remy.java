@@ -1,4 +1,13 @@
+package remy;
+
 import java.io.IOException;
+
+import remy.command.Command;
+import remy.exception.RemyException;
+import remy.parser.Parser;
+import remy.storage.Storage;
+import remy.task.TaskList;
+import remy.ui.Ui;
 
 /**
  * The Remy class is a public class that encapsulates a chatbot named after one of the main characters in the movie

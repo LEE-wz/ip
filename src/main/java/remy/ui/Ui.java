@@ -1,5 +1,9 @@
+package remy.ui;
+
 import java.util.List;
 import java.util.Scanner;
+
+import remy.task.Task;
 
 /**
  * Handles all messages shown to the user by the Remy application.

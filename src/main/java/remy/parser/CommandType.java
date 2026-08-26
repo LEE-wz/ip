@@ -1,3 +1,5 @@
+package remy.parser;
+
 /**
  * The CommandType enum is a data type to define a fixed set of instructions for the chatbot to follow.
  * Each CommandType will result in different actions performed by the chatbot.

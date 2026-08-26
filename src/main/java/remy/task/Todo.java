@@ -1,3 +1,5 @@
+package remy.task;
+
 /**
  * This class encapsulates a To/do task
  *

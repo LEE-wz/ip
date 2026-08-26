@@ -1,3 +1,5 @@
+package remy.exception;
+
 public class RemyException extends RuntimeException{
 
     // Invalid keyword

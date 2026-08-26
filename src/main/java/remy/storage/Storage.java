@@ -1,3 +1,5 @@
+package remy.storage;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -6,6 +8,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+
+import remy.parser.DateParser;
+import remy.task.Deadline;
+import remy.task.Event;
+import remy.task.Task;
+import remy.task.TaskList;
+import remy.task.Todo;
 
 /**
  * Loads tasks from and saves tasks to Remy's task file.
@@ -127,7 +136,9 @@ public class Storage {
             return null;
         }
 
-        task.isDone = isDone;
+        if (isDone) {
+            task.markAsDone();
+        }
         return task;
     }
 
