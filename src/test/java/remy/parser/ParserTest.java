@@ -55,7 +55,7 @@ class ParserTest {
     }
 
     /**
-     * Tests that the parse method correctly converts task creation commands into the expected tasks added to the task list.
+     * Tests that parsing creates the expected tasks for task-creation commands.
      */
     @Test
     void parse_taskCreationCommands_expectedTasksAdded() {
@@ -74,7 +74,7 @@ class ParserTest {
     }
 
     /**
-     * Tests that the parse method correctly converts index-based commands into the expected task changes in the task list.
+     * Tests that index-based commands apply the expected task-list changes.
      */
     @Test
     void parse_indexCommands_expectedTaskChangesApplied() {

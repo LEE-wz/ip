@@ -46,7 +46,7 @@ class StorageTest {
     }
 
     /**
-     * Tests that the save and load methods correctly persist and retrieve tasks of all types, preserving their completion status.
+     * Tests that save and load preserve all task types and completion status.
      *
      * @throws IOException if an I/O error occurs during the test
      */
