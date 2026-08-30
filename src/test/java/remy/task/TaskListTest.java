@@ -29,7 +29,8 @@ class TaskListTest {
     }
 
     /**
-     * Tests that the constructor creates a task list containing the provided tasks, and that subsequent changes to the source list do not affect the task list.
+     * Tests that the constructor copies the supplied task list and is unaffected by
+     * later changes to the source list.
      */
     @Test
     void constructor_initialTasksSourceListChanges_taskListRemainsUnchanged() {
@@ -146,7 +147,7 @@ class TaskListTest {
     }
 
     /**
-     * Tests that the getTasks method returns a snapshot of the task list that does not change when the task list is modified after the snapshot is taken.
+     * Tests that the task snapshot remains stable even after the list changes.
      */
     @Test
     void getTasks_taskListChangesAfterSnapshot_snapshotRemainsUnchanged() {

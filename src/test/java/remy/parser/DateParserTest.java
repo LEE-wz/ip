@@ -16,7 +16,8 @@ import org.junit.jupiter.api.Test;
 class DateParserTest {
 
     /**
-     * Tests that the parseDateTime method correctly parses supported date-time formats and returns the expected LocalDateTime object. It also tests that invalid or date-only inputs return null.
+     * Tests that the parseDateTime method accepts supported date-time formats and
+     * rejects invalid or date-only inputs.
      */
     @Test
     void parseDateTime_supportedNumericAndTextFormats_correctDateTimeReturned() {
@@ -38,7 +39,8 @@ class DateParserTest {
     }
 
     /**
-     * Tests that the parseDate method correctly parses supported date formats and returns the expected LocalDate object. It also tests that invalid or date-time inputs return null.
+     * Tests that the parseDate method accepts supported date formats and rejects
+     * invalid or date-time inputs.
      */
     @Test
     void parseDate_supportedNumericAndTextFormats_correctDateReturned() {
