@@ -123,23 +123,6 @@ public class Parser {
     }
 
     /**
-     * Parses a task-creation command and creates the requested task.
-     *
-     * @param message user message containing a task description and details
-     * @param commandType type of task to create
-     * @return newly created task
-     * @throws RemyException if required task details are invalid or missing
-     */
-    private Task parseTask(String message, CommandType commandType) {
-        return switch (commandType) {
-            case TODO -> parseTodo(message);
-            case DEADLINE -> parseDeadline(message);
-            case EVENT -> parseEvent(message);
-            default -> throw new IllegalArgumentException("Command does not create a task: " + commandType);
-        };
-    }
-
-    /**
      * Parses an indexed command's integer argument.
      *
      * @param message user message containing the index
@@ -160,6 +143,23 @@ public class Parser {
         } catch (NumberFormatException e) {
             throw new RemyException(invalidIndexMessage);
         }
+    }
+
+    /**
+     * Parses a task-creation command and creates the requested task.
+     *
+     * @param message user message containing a task description and details
+     * @param commandType type of task to create
+     * @return newly created task
+     * @throws RemyException if required task details are invalid or missing
+     */
+    private Task parseTask(String message, CommandType commandType) {
+        return switch (commandType) {
+            case TODO -> parseTodo(message);
+            case DEADLINE -> parseDeadline(message);
+            case EVENT -> parseEvent(message);
+            default -> throw new IllegalArgumentException("Command does not create a task: " + commandType);
+        };
     }
 
     /**
