@@ -5,6 +5,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
+/**
+ * GUI class Main that extends Application
+ */
 public class Main extends Application {
 
     @Override
