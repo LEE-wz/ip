@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.Region;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import remy.Remy;
 
 /**
  * GUI class Main that extends Application
@@ -25,6 +26,7 @@ public class Main extends Application {
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/User.png"));
     private Image dukeImage = new Image(this.getClass().getResourceAsStream("/images/Remy.png"));
 
+    private Remy remy = new Remy();
 
     @Override
     public void start(Stage stage) {
@@ -93,7 +95,12 @@ public class Main extends Application {
      * the dialog container. Clears the user input after processing.
      */
     private void handleUserInput() {
-        dialogContainer.getChildren().addAll(new DialogBox(userInput.getText(), userImage));
+        String userText = userInput.getText();
+        String dukeText = remy.getResponse(userInput.getText());
+        dialogContainer.getChildren().addAll(
+                new DialogBox(userText, userImage),
+                new DialogBox(dukeText, dukeImage)
+        );
         userInput.clear();
     }
 }
