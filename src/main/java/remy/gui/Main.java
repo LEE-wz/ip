@@ -24,7 +24,7 @@ public class Main extends Application {
     private Scene scene;
 
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/User.png"));
-    private Image dukeImage = new Image(this.getClass().getResourceAsStream("/images/Remy.png"));
+    private Image remyImage = new Image(this.getClass().getResourceAsStream("/images/Remy.png"));
 
     private Remy remy = new Remy();
 
@@ -96,10 +96,10 @@ public class Main extends Application {
      */
     private void handleUserInput() {
         String userText = userInput.getText();
-        String dukeText = remy.getResponse(userInput.getText());
+        String remyText = remy.getResponse(userInput.getText());
         dialogContainer.getChildren().addAll(
-                new DialogBox(userText, userImage),
-                new DialogBox(dukeText, dukeImage)
+                DialogBox.getUserDialog(userText, userImage),
+                DialogBox.getRemyDialog(remyText, remyImage)
         );
         userInput.clear();
     }
