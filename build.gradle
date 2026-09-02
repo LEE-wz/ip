@@ -61,7 +61,7 @@ test {
 }
 
 application {
-    mainClass = 'remy.Remy'
+    mainClass.set("remy.gui.Launcher")
 }
 
 jar {
