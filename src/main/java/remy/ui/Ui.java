@@ -1,5 +1,6 @@
 package remy.ui;
 
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,9 +15,32 @@ public class Ui {
     /** Reads commands entered through the console. */
     private final Scanner scanner;
 
+    /** Receives messages produced by the application. */
+    private final PrintStream output;
+
     /** Creates a user interface that communicates through the standard console. */
     public Ui() {
-        this.scanner = new Scanner(System.in);
+        this(new Scanner(System.in), System.out);
+    }
+
+    /**
+     * Creates an output-only user interface that writes to the given stream.
+     *
+     * @param output stream that receives application messages
+     */
+    public Ui(PrintStream output) {
+        this(null, output);
+    }
+
+    /**
+     * Creates a user interface using the given input reader and output stream.
+     *
+     * @param scanner reader used to obtain commands, or null for an output-only interface
+     * @param output stream that receives application messages
+     */
+    private Ui(Scanner scanner, PrintStream output) {
+        this.scanner = scanner;
+        this.output = output;
     }
 
     /**
@@ -25,17 +49,22 @@ public class Ui {
      * @return the next command
      */
     public String readCommand() {
+        if (scanner == null) {
+            throw new IllegalStateException("This user interface does not accept input.");
+        }
         return scanner.nextLine();
     }
 
     /** Closes the console input reader. */
     public void close() {
-        scanner.close();
+        if (scanner != null) {
+            scanner.close();
+        }
     }
 
     /** Displays the greeting shown when a chat session begins. */
     public void showGreeting() {
-        System.out.println(
+        output.println(
                 """
                         ____________________________________________________________
                          _____                     \s
@@ -55,7 +84,7 @@ public class Ui {
 
     /** Displays the farewell shown when a chat session ends. */
     public void showFarewell() {
-        System.out.println(
+        output.println(
                 """
                         ____________________________________________________________
                         Cya. Call me again when you need me!
@@ -69,7 +98,7 @@ public class Ui {
      * @param message the error message to display
      */
     public void showError(String message) {
-        System.out.println(message);
+        output.println(message);
     }
 
     /**
@@ -78,11 +107,16 @@ public class Ui {
      * @param tasks tasks to display
      */
     public void showTaskList(List<Task> tasks) {
-        System.out.println("____________________________________________________________\n");
-        for (Task task : tasks) {
-            System.out.println((tasks.indexOf(task) + 1) + ". " + task);
+        output.println("____________________________________________________________\n");
+        if (tasks.isEmpty()) {
+            output.println("There are no tasks in your list yet.");
+        } else {
+            output.println("Here are the tasks in your list:");
+            for (int index = 0; index < tasks.size(); index++) {
+                output.println((index + 1) + ". " + tasks.get(index));
+            }
         }
-        System.out.println("____________________________________________________________\n");
+        output.println("____________________________________________________________\n");
     }
 
     /**
@@ -91,12 +125,12 @@ public class Ui {
      * @param tasks matching tasks to display
      */
     public void showMatchingTasks(List<Task> tasks) {
-        System.out.println("____________________________________________________________\n");
-        System.out.println("Here are the matching tasks in your list:");
+        output.println("____________________________________________________________\n");
+        output.println("Here are the matching tasks in your list:");
         for (int index = 0; index < tasks.size(); index++) {
-            System.out.println((index + 1) + "." + tasks.get(index));
+            output.println((index + 1) + "." + tasks.get(index));
         }
-        System.out.println("____________________________________________________________\n");
+        output.println("____________________________________________________________\n");
     }
 
     /**
@@ -112,7 +146,7 @@ public class Ui {
                         + task + "\n"
                         + "Now you have " + taskCount + " task(s) in the list. Better hurry before it piles up!\n"
                         + "____________________________________________________________\n";
-        System.out.println(result);
+        output.println(result);
     }
 
     /**
@@ -128,7 +162,7 @@ public class Ui {
                         + task + "\n"
                         + "Now you have " + taskCount + " tasks in the list. Good luck LOL.\n"
                         + "____________________________________________________________\n";
-        System.out.println(result);
+        output.println(result);
     }
 
     /**
@@ -137,10 +171,10 @@ public class Ui {
      * @param task the task marked as done
      */
     public void showTaskMarkedAsDone(Task task) {
-        System.out.println("____________________________________________________________\n");
-        System.out.println(" Nice! I've marked this task as done:\n");
-        System.out.println(task);
-        System.out.println("____________________________________________________________\n");
+        output.println("____________________________________________________________\n");
+        output.println(" Nice! I've marked this task as done:\n");
+        output.println(task);
+        output.println("____________________________________________________________\n");
     }
 
     /**
@@ -149,19 +183,19 @@ public class Ui {
      * @param task the task marked as undone
      */
     public void showTaskMarkedAsUndone(Task task) {
-        System.out.println("____________________________________________________________\n");
-        System.out.println(" OK, I've marked this task as not done yet:\n");
-        System.out.println(task);
-        System.out.println("____________________________________________________________\n");
+        output.println("____________________________________________________________\n");
+        output.println(" OK, I've marked this task as not done yet:\n");
+        output.println(task);
+        output.println("____________________________________________________________\n");
     }
 
     /** Displays the error shown when saving tasks fails. */
     public void showSavingError() {
-        System.out.println("Unable to save tasks to data/remy.txt");
+        output.println("Unable to save tasks to data/remy.txt");
     }
 
     /** Displays the error shown when loading tasks fails. */
     public void showLoadingError() {
-        System.out.println("Unable to load saved tasks from data/remy.txt");
+        output.println("Unable to load saved tasks from data/remy.txt");
     }
 }

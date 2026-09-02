@@ -1,0 +1,80 @@
+package remy.gui;
+
+import java.util.Objects;
+
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
+import remy.Remy;
+
+/**
+ * Controller for the main GUI.
+ */
+public class MainWindow extends AnchorPane {
+    @FXML
+    private ScrollPane scrollPane;
+    @FXML
+    private VBox dialogContainer;
+    @FXML
+    private TextField userInput;
+    @FXML
+    private Button sendButton;
+
+    private Remy remy;
+
+    /** Profile image displayed beside the user's messages. */
+    private final Image userImage = loadImage("/images/User.png");
+
+    /** Profile image displayed beside Remy's messages. */
+    private final Image remyImage = loadImage("/images/Remy.png");
+
+    /** Configures automatic scrolling after the FXML controls have been injected. */
+    @FXML
+    public void initialize() {
+        scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+    }
+
+    /**
+     * Connects the chatbot to this window and displays its greeting.
+     *
+     * @param remy chatbot that handles commands entered in this window
+     */
+    public void setRemy(Remy remy) {
+        this.remy = remy;
+        dialogContainer.getChildren()
+                .add(DialogBox.getRemyDialog(remy.getGreeting(), remyImage));
+        Platform.runLater(userInput::requestFocus);
+    }
+
+    /**
+     * Displays the user's command and Remy's response, then prepares the input field for the next command.
+     */
+    @FXML
+    private void handleUserInput() {
+        String input = userInput.getText();
+        String response = remy.getResponse(input);
+        if (!input.isBlank()) {
+            dialogContainer.getChildren().add(DialogBox.getUserDialog(input.strip(), userImage));
+        }
+        dialogContainer.getChildren().add(DialogBox.getRemyDialog(response, remyImage));
+        userInput.clear();
+
+        if (remy.hasExited()) {
+            userInput.setPromptText("Chat ended");
+            userInput.setDisable(true);
+            sendButton.setDisable(true);
+        } else {
+            userInput.requestFocus();
+        }
+    }
+
+    /** Returns an image resource, failing early when the packaged resource is missing. */
+    private Image loadImage(String resourcePath) {
+        return new Image(Objects.requireNonNull(getClass().getResourceAsStream(resourcePath)));
+    }
+}
