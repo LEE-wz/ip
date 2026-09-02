@@ -24,18 +24,21 @@ public class DialogBox extends HBox {
     @FXML
     private ImageView displayPicture;
 
-    private DialogBox(String text, Image img) {
+    private DialogBox(String text, Image image) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("/view/DialogBox.fxml"));
             fxmlLoader.setController(this);
             fxmlLoader.setRoot(this);
             fxmlLoader.load();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Unable to load the dialog layout.", e);
         }
 
         dialog.setText(text);
-        displayPicture.setImage(img);
+        dialog.maxWidthProperty().
+                bind(widthProperty().
+                        multiply(0.72));
+        displayPicture.setImage(image);
     }
 
     /**
@@ -48,13 +51,44 @@ public class DialogBox extends HBox {
         setAlignment(Pos.TOP_LEFT);
     }
 
-    public static DialogBox getUserDialog(String text, Image img) {
-        return new DialogBox(text, img);
+    /**
+     * Creates a right-aligned dialog spoken by the user.
+     *
+     * @param text message to display
+     * @param image profile image to display
+     * @return user dialog box
+     */
+    public static DialogBox getUserDialog(String text, Image image) {
+        DialogBox dialogBox = new DialogBox(text, image);
+
+        dialogBox.dialog
+                .getStyleClass()
+                .add("user-bubble");
+
+        dialogBox.displayPicture
+                .setAccessibleText("User");
+
+        return dialogBox;
     }
 
-    public static DialogBox getRemyDialog(String text, Image img) {
-        var db = new DialogBox(text, img);
-        db.flip();
-        return db;
+    /**
+     * Creates a left-aligned dialog spoken by Remy.
+     *
+     * @param text message to display
+     * @param image profile image to display
+     * @return Remy dialog box
+     */
+    public static DialogBox getRemyDialog(String text, Image image) {
+        DialogBox dialogBox = new DialogBox(text, image);
+
+        dialogBox.dialog
+                .getStyleClass()
+                .add("remy-bubble");
+
+        dialogBox.displayPicture
+                .setAccessibleText("Remy");
+
+        dialogBox.flip();
+        return dialogBox;
     }
 }

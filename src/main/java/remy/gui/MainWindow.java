@@ -1,5 +1,8 @@
 package remy.gui;
 
+import java.util.Objects;
+
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -24,31 +27,54 @@ public class MainWindow extends AnchorPane {
 
     private Remy remy;
 
-    private Image userImage = new Image(this.getClass().getResourceAsStream("/images/User.png"));
-    private Image dukeImage = new Image(this.getClass().getResourceAsStream("/images/Remy.png"));
+    /** Profile image displayed beside the user's messages. */
+    private final Image userImage = loadImage("/images/User.png");
 
+    /** Profile image displayed beside Remy's messages. */
+    private final Image remyImage = loadImage("/images/Remy.png");
+
+    /** Configures automatic scrolling after the FXML controls have been injected. */
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
-    /** Injects the Remy instance */
-    public void setRemy(Remy r) {
-        remy = r;
+    /**
+     * Connects the chatbot to this window and displays its greeting.
+     *
+     * @param remy chatbot that handles commands entered in this window
+     */
+    public void setRemy(Remy remy) {
+        this.remy = remy;
+        dialogContainer.getChildren()
+                .add(DialogBox.getRemyDialog(remy.getGreeting(), remyImage));
+        Platform.runLater(userInput::requestFocus);
     }
 
     /**
-     * Creates two dialog boxes, one echoing user input and the other containing Duke's reply and then appends them to
-     * the dialog container. Clears the user input after processing.
+     * Displays the user's command and Remy's response, then prepares the input field for the next command.
      */
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
         String response = remy.getResponse(input);
-        dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, userImage),
-                DialogBox.getRemyDialog(response, dukeImage)
-        );
+        if (!input.isBlank()) {
+            dialogContainer.getChildren().add(DialogBox.getUserDialog(input.strip(), userImage));
+        }
+        dialogContainer.getChildren().add(DialogBox.getRemyDialog(response, remyImage));
         userInput.clear();
+
+        if (remy.hasExited()) {
+            userInput.setPromptText("Chat ended");
+            userInput.setDisable(true);
+            sendButton.setDisable(true);
+        } else {
+            userInput.requestFocus();
+        }
+    }
+
+    /** Returns an image resource, failing early when the packaged resource is missing. */
+    private Image loadImage(String resourcePath) {
+        return new Image(Objects.requireNonNull(getClass().getResourceAsStream(resourcePath)));
     }
 }
