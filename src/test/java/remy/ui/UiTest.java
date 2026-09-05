@@ -45,8 +45,27 @@ class UiTest {
                 ____________________________________________________________
 
                 Here are the matching tasks in your list:
-                1.[T][X] read book
-                2.[T][X] return book
+                1. [T][X] read book
+                2. [T][X] return book
+                ____________________________________________________________
+
+                """;
+        assertEquals(expectedOutput, output.toString());
+    }
+
+    @Test
+    void showTaskList_tasks_expectedHeadingAndNumberedTasksDisplayed() {
+        Task firstTask = new Todo("read book");
+        Task secondTask = new Todo("return book");
+
+        new Ui().showTaskList(List.of(firstTask, secondTask));
+
+        String expectedOutput = """
+                ____________________________________________________________
+
+                Here are the tasks in your list:
+                1. [T][ ] read book
+                2. [T][ ] return book
                 ____________________________________________________________
 
                 """;

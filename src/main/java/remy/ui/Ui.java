@@ -112,9 +112,7 @@ public class Ui {
             output.println("There are no tasks in your list yet.");
         } else {
             output.println("Here are the tasks in your list:");
-            for (int index = 0; index < tasks.size(); index++) {
-                output.println((index + 1) + ". " + tasks.get(index));
-            }
+            showNumberedTasks(tasks);
         }
         output.println("____________________________________________________________\n");
     }
@@ -127,10 +125,15 @@ public class Ui {
     public void showMatchingTasks(List<Task> tasks) {
         output.println("____________________________________________________________\n");
         output.println("Here are the matching tasks in your list:");
-        for (int index = 0; index < tasks.size(); index++) {
-            output.println((index + 1) + "." + tasks.get(index));
-        }
+        showNumberedTasks(tasks);
         output.println("____________________________________________________________\n");
+    }
+
+    /** Displays tasks with one-based numbering. */
+    private void showNumberedTasks(List<Task> tasks) {
+        for (int index = 0; index < tasks.size(); index++) {
+            output.println((index + 1) + ". " + tasks.get(index));
+        }
     }
 
     /**
