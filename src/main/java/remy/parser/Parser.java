@@ -237,6 +237,18 @@ public class Parser {
                     !isMissingDescription, !isMissingDeadline);
         }
 
+        return createDeadline(description, deadline);
+    }
+
+    /**
+     * Creates a deadline from validated command details.
+     *
+     * @param description deadline description
+     * @param deadline deadline endpoint to parse
+     * @return a deadline containing the parsed endpoint
+     * @throws RemyException if the endpoint has an unsupported date format
+     */
+    private Deadline createDeadline(String description, String deadline) {
         LocalDateTime deadlineDateTime = DateParser.parseDateTime(deadline);
         if (deadlineDateTime != null) {
             return new Deadline(description, deadlineDateTime);
@@ -284,6 +296,19 @@ public class Parser {
                     !isMissingDescription, !isMissingStart, !isMissingEnd);
         }
 
+        return createEvent(description, start, end);
+    }
+
+    /**
+     * Creates an event from validated command details.
+     *
+     * @param description event description
+     * @param start event start endpoint to parse
+     * @param end event end endpoint to parse
+     * @return an event containing the parsed endpoints
+     * @throws RemyException if the endpoints do not share a supported date format
+     */
+    private Event createEvent(String description, String start, String end) {
         LocalDateTime startDateTime = DateParser.parseDateTime(start);
         LocalDateTime endDateTime = DateParser.parseDateTime(end);
         LocalDate startDate = DateParser.parseDate(start);

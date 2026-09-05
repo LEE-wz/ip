@@ -73,6 +73,20 @@ class ParserTest {
                 tasks.getTasks().stream().map(Task::toString).toList());
     }
 
+    @Test
+    void parse_taskCreationCommandsWithDateVariants_expectedDatesAdded() {
+        Parser parser = new Parser();
+        TaskList tasks = new TaskList();
+
+        execute(parser.parse("deadline Submit assignment /by 23/8/2026 1430"), tasks);
+        execute(parser.parse("event Project period /from 23/8/2026 /to 24/8/2026"), tasks);
+
+        assertEquals(List.of(
+                "[D][ ] Submit assignment (by: Aug 23 2026 14:30)",
+                "[E][ ] Project period (from: Aug 23 2026 to: Aug 24 2026)"),
+                tasks.getTasks().stream().map(Task::toString).toList());
+    }
+
     /**
      * Tests that index-based commands apply the expected task-list changes.
      */
