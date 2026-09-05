@@ -63,6 +63,13 @@ public class Event extends Task {
     public Event(String description, LocalDate startDate, LocalDate endDate,
             LocalDateTime startDateTime, LocalDateTime endDateTime) {
         super(description);
+        boolean hasDateEndpoints = startDate != null && endDate != null
+                && startDateTime == null && endDateTime == null;
+        boolean hasDateTimeEndpoints = startDate == null && endDate == null
+                && startDateTime != null && endDateTime != null;
+        assert hasDateEndpoints || hasDateTimeEndpoints
+                : "Event must have exactly one complete endpoint representation";
+
         this.startDate = startDate;
         this.endDate = endDate;
         this.startDateTime = startDateTime;

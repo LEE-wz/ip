@@ -37,6 +37,9 @@ public class DialogBox extends HBox {
             throw new IllegalStateException("Unable to load the dialog layout.", e);
         }
 
+        assert dialog != null : "FXML loader must inject the dialog label";
+        assert displayPicture != null : "FXML loader must inject the display picture";
+
         dialog.setText(text);
         dialog.maxWidthProperty()
                 .bind(widthProperty()
