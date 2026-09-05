@@ -89,4 +89,21 @@ class StorageTest {
         assertEquals(List.of("[T][X] Read book", "[T][ ] Return book"),
                 loadedTasks.getTasks().stream().map(Task::toString).toList());
     }
+
+    @Test
+    void load_taskFileContainsMalformedTaskMarkers_malformedTasksIgnored() throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(taskFile, String.join(System.lineSeparator(),
+                "[T][X] Read book",
+                "[Q][X] Unknown task type",
+                "[T][?] Unknown task status",
+                "[T][X]   ",
+                "[T][X]"));
+        Storage storage = new Storage(taskFile.toString());
+
+        TaskList loadedTasks = storage.load();
+
+        assertEquals(List.of("[T][X] Read book"),
+                loadedTasks.getTasks().stream().map(Task::toString).toList());
+    }
 }
