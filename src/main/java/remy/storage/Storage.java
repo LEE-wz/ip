@@ -6,7 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import remy.parser.DateParser;
@@ -78,13 +79,10 @@ public class Storage {
             return new TaskList();
         }
 
-        ArrayList<Task> loadedTasks = new ArrayList<>();
-        for (String line : Files.readAllLines(taskFile)) {
-            Task task = parseTask(line);
-            if (task != null) {
-                loadedTasks.add(task);
-            }
-        }
+        List<Task> loadedTasks = Files.readAllLines(taskFile).stream()
+                .map(this::parseTask)
+                .filter(Objects::nonNull)
+                .toList();
         return new TaskList(loadedTasks);
     }
 

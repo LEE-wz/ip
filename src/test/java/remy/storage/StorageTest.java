@@ -80,12 +80,13 @@ class StorageTest {
         Files.writeString(taskFile, String.join(System.lineSeparator(),
                 "[T][X] Read book",
                 "not a task",
-                "[D][ ] Missing deadline"));
+                "[D][ ] Missing deadline",
+                "[T][ ] Return book"));
         Storage storage = new Storage(taskFile.toString());
 
         TaskList loadedTasks = storage.load();
 
-        assertEquals(List.of("[T][X] Read book"),
+        assertEquals(List.of("[T][X] Read book", "[T][ ] Return book"),
                 loadedTasks.getTasks().stream().map(Task::toString).toList());
     }
 }
