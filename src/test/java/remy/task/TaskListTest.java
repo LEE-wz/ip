@@ -59,6 +59,13 @@ class TaskListTest {
         assertEquals(task, taskList.get(0));
     }
 
+    @Test
+    void add_nullTask_assertionErrorThrown() {
+        TaskList taskList = new TaskList();
+
+        assertThrows(AssertionError.class, () -> taskList.add(null));
+    }
+
     /**
      * Tests that retrieving a task by a valid index returns the corresponding task.
      */
@@ -120,6 +127,13 @@ class TaskListTest {
         TaskList taskList = new TaskList(List.of(new Todo("Read book")));
 
         assertTrue(taskList.find("assignment").isEmpty());
+    }
+
+    @Test
+    void find_blankKeyword_assertionErrorThrown() {
+        TaskList taskList = new TaskList(List.of(new Todo("Read book")));
+
+        assertThrows(AssertionError.class, () -> taskList.find("   "));
     }
 
     @Test
