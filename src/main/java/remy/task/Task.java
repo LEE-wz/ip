@@ -1,7 +1,7 @@
 package remy.task;
 
 /**
- * The Task class is a public class that encapsulates a task to be completed by the user.
+ * Represents a task with a description and completion state.
  *
  * @author LEE-wz
  */
@@ -38,7 +38,7 @@ public class Task {
      *         ' ' if this task is not done
      */
     public String getStatusIcon() {
-        return (isDone ? "X" : " "); // mark done task with X
+        return isDone ? "X" : " ";
     }
 
     /** Marks this task as done. */
