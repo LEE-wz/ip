@@ -73,6 +73,20 @@ class ParserTest {
                 tasks.getTasks().stream().map(Task::toString).toList());
     }
 
+    @Test
+    void parse_taskCreationCommandsWithDateVariants_expectedDatesAdded() {
+        Parser parser = new Parser();
+        TaskList tasks = new TaskList();
+
+        execute(parser.parse("deadline Submit assignment /by 23/8/2026 1430"), tasks);
+        execute(parser.parse("event Project period /from 23/8/2026 /to 24/8/2026"), tasks);
+
+        assertEquals(List.of(
+                "[D][ ] Submit assignment (by: Aug 23 2026 14:30)",
+                "[E][ ] Project period (from: Aug 23 2026 to: Aug 24 2026)"),
+                tasks.getTasks().stream().map(Task::toString).toList());
+    }
+
     /**
      * Tests that index-based commands apply the expected task-list changes.
      */
@@ -99,11 +113,21 @@ class ParserTest {
         Parser parser = new Parser();
 
         assertThrows(RemyException.class, () -> parser.parse(null));
-        assertThrows(RemyException.class, () -> parser.parse("todo"));
         assertThrows(RemyException.class, () -> parser.parse("deadline submit /by tomorrow"));
-        assertThrows(RemyException.class, () -> parser.parse("event meeting /from 23/8/2026"));
         assertThrows(RemyException.class, () -> parser.parse("mark one"));
+    }
+
+    @Test
+    void parse_commandsWithoutRequiredArguments_remyExceptionThrown() {
+        Parser parser = new Parser();
+
+        assertThrows(RemyException.class, () -> parser.parse("todo"));
+        assertThrows(RemyException.class, () -> parser.parse("deadline"));
+        assertThrows(RemyException.class, () -> parser.parse("event"));
         assertThrows(RemyException.class, () -> parser.parse("find"));
+        assertThrows(RemyException.class, () -> parser.parse("mark"));
+        assertThrows(RemyException.class, () -> parser.parse("unmark"));
+        assertThrows(RemyException.class, () -> parser.parse("delete"));
     }
 
     /** Executes a parsed command using isolated persistence for the test. */

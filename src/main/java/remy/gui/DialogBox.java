@@ -19,6 +19,9 @@ import javafx.scene.layout.HBox;
  * and a label containing text from the speaker.
  */
 public class DialogBox extends HBox {
+    /** Portion of the dialog box width available to its message label. */
+    private static final double DIALOG_LABEL_WIDTH_RATIO = 0.72;
+
     @FXML
     private Label dialog;
     @FXML
@@ -40,7 +43,7 @@ public class DialogBox extends HBox {
         dialog.setText(text);
         dialog.maxWidthProperty()
                 .bind(widthProperty()
-                        .multiply(0.72));
+                        .multiply(DIALOG_LABEL_WIDTH_RATIO));
         displayPicture.setImage(image);
     }
 
@@ -48,9 +51,9 @@ public class DialogBox extends HBox {
      * Flips the dialog box such that the ImageView is on the left and text on the right.
      */
     private void flip() {
-        ObservableList<Node> tmp = FXCollections.observableArrayList(this.getChildren());
-        Collections.reverse(tmp);
-        getChildren().setAll(tmp);
+        ObservableList<Node> reversedChildren = FXCollections.observableArrayList(getChildren());
+        Collections.reverse(reversedChildren);
+        getChildren().setAll(reversedChildren);
         setAlignment(Pos.TOP_LEFT);
     }
 

@@ -24,10 +24,10 @@ public class RemyException extends RuntimeException {
     /**
      * Creates an exception for a to-do command with no description.
      *
-     * @param hasDescription Whether a description was supplied.
+     * @return An exception describing the missing to-do description.
      */
-    public RemyException(boolean hasDescription) {
-        super(formatTodoMessage());
+    public static RemyException createForMissingTodoDescription() {
+        return new RemyException(formatTodoDetails());
     }
 
     /**
@@ -35,9 +35,11 @@ public class RemyException extends RuntimeException {
      *
      * @param hasDescription Whether a description was supplied.
      * @param hasDeadline Whether a deadline was supplied.
+     * @return An exception describing the missing deadline details.
      */
-    public RemyException(boolean hasDescription, boolean hasDeadline) {
-        super(formatDeadlineMessage(hasDescription, hasDeadline));
+    public static RemyException createForMissingDeadlineDetails(boolean hasDescription,
+            boolean hasDeadline) {
+        return new RemyException(formatDeadlineDetails(hasDescription, hasDeadline));
     }
 
     /**
@@ -46,9 +48,11 @@ public class RemyException extends RuntimeException {
      * @param hasDescription Whether a description was supplied.
      * @param hasStart Whether a start endpoint was supplied.
      * @param hasEnd Whether an end endpoint was supplied.
+     * @return An exception describing the missing event details.
      */
-    public RemyException(boolean hasDescription, boolean hasStart, boolean hasEnd) {
-        super(formatEventMessage(hasDescription, hasStart, hasEnd));
+    public static RemyException createForMissingEventDetails(boolean hasDescription, boolean hasStart,
+            boolean hasEnd) {
+        return new RemyException(formatEventDetails(hasDescription, hasStart, hasEnd));
     }
 
     /**
@@ -62,26 +66,25 @@ public class RemyException extends RuntimeException {
     }
 
     /**
-     * Returns the message for a to-do command without a description.
+     * Returns the details for a to-do command without a description.
      *
-     * @return The formatted error message.
+     * @return The error details.
      */
-    private static String formatTodoMessage() {
-        String details = "Bruh :/, you need to fill in the description of your todo task, "
+    private static String formatTodoDetails() {
+        return "Bruh :/, you need to fill in the description of your todo task, "
                 + "unless you're doing nothing :/.\n"
                 + "\nYour todo task should look something like this, please don't mess it up again -_-: \n"
-                + "todo borrow book\n";
-        return formatMessage(details);
+                + "todo borrow book";
     }
 
     /**
-     * Returns the message for a deadline command with missing details.
+     * Returns the details for a deadline command with missing details.
      *
      * @param hasDescription Whether a description was supplied.
      * @param hasDeadline Whether a deadline was supplied.
-     * @return The formatted error message.
+     * @return The error details.
      */
-    private static String formatDeadlineMessage(boolean hasDescription, boolean hasDeadline) {
+    private static String formatDeadlineDetails(boolean hasDescription, boolean hasDeadline) {
         String details = "Bruh :/, your deadline task is missing the following: \n";
 
         if (!hasDescription) {
@@ -94,19 +97,19 @@ public class RemyException extends RuntimeException {
 
         details += "\nYour deadline task should look something like this, "
                 + "please don't mess it up again -_-: \n"
-                + "deadline return book /by Sunday\n";
-        return formatMessage(details);
+                + "deadline return book /by Sunday";
+        return details;
     }
 
     /**
-     * Returns the message for an event command with missing details.
+     * Returns the details for an event command with missing details.
      *
      * @param hasDescription Whether a description was supplied.
      * @param hasStart Whether a start endpoint was supplied.
      * @param hasEnd Whether an end endpoint was supplied.
-     * @return The formatted error message.
+     * @return The error details.
      */
-    private static String formatEventMessage(boolean hasDescription, boolean hasStart, boolean hasEnd) {
+    private static String formatEventDetails(boolean hasDescription, boolean hasStart, boolean hasEnd) {
         String details = "Bruh :/, your event task is missing the following: \n";
 
         if (!hasDescription) {
@@ -123,7 +126,7 @@ public class RemyException extends RuntimeException {
 
         details += "\nYour event task should look something like this, "
                 + "please don't mess it up again -_-: \n"
-                + "event project meeting /from Mon 2pm /to 4pm\n";
-        return formatMessage(details);
+                + "event project meeting /from Mon 2pm /to 4pm";
+        return details;
     }
 }

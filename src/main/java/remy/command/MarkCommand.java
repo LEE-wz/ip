@@ -29,13 +29,6 @@ public class MarkCommand extends Command {
         this.isDone = isDone;
     }
 
-    /**
-     * Marks the corresponding task in the task list as done or undone based on isDone, and saves it into storage
-     *
-     * @param tasks task collection to operate on
-     * @param ui user interface used to display results
-     * @param storage persistence service used to save changes
-     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         if (taskIndex > tasks.size() || taskIndex < 1) {
