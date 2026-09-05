@@ -170,7 +170,7 @@ public class Parser {
      */
     private Todo parseTodo(String message) {
         if (message.strip().length() == 4) {
-            throw new RemyException(false);
+            throw RemyException.createForMissingTodoDescription();
         }
 
         String description = message.substring(4).strip();
@@ -185,12 +185,12 @@ public class Parser {
      */
     private Deadline parseDeadline(String message) {
         if (message.length() == 8) {
-            throw new RemyException(false, false);
+            throw RemyException.createForMissingDeadlineDetails(false, false);
         }
 
         String[] messageSplit = message.split("/by", 0);
         if (messageSplit.length == 1) {
-            throw new RemyException(true, false);
+            throw RemyException.createForMissingDeadlineDetails(true, false);
         }
 
         String description = messageSplit[0].substring(8).strip();
@@ -198,7 +198,8 @@ public class Parser {
         boolean isMissingDescription = description.isEmpty();
         boolean isMissingDeadline = deadline.isEmpty();
         if (isMissingDescription || isMissingDeadline) {
-            throw new RemyException(!isMissingDescription, !isMissingDeadline);
+            throw RemyException.createForMissingDeadlineDetails(
+                    !isMissingDescription, !isMissingDeadline);
         }
 
         LocalDateTime deadlineDateTime = DateParser.parseDateTime(deadline);
@@ -211,7 +212,7 @@ public class Parser {
             return new Deadline(description, deadlineDate);
         }
 
-        throw new RemyException(true, false);
+        throw RemyException.createForMissingDeadlineDetails(true, false);
     }
 
     /**
@@ -222,12 +223,12 @@ public class Parser {
      */
     private Event parseEvent(String message) {
         if (message.length() == 5) {
-            throw new RemyException(false, false, false);
+            throw RemyException.createForMissingEventDetails(false, false, false);
         }
 
         String[] messageSplit = message.split("/from|/to", 0);
         if (messageSplit.length == 1) {
-            throw new RemyException(true, false, false);
+            throw RemyException.createForMissingEventDetails(true, false, false);
         }
 
         String description = messageSplit[0].substring(5).strip();
@@ -235,7 +236,7 @@ public class Parser {
         if (messageSplit.length == 2) {
             boolean hasFrom = message.contains("/from");
             boolean hasTo = message.contains("/to");
-            throw new RemyException(!isMissingDescription, hasFrom, hasTo);
+            throw RemyException.createForMissingEventDetails(!isMissingDescription, hasFrom, hasTo);
         }
 
         String start = messageSplit[1].strip();
@@ -243,7 +244,8 @@ public class Parser {
         boolean isMissingStart = start.isEmpty();
         boolean isMissingEnd = end.isEmpty();
         if (isMissingDescription || isMissingStart || isMissingEnd) {
-            throw new RemyException(!isMissingDescription, !isMissingStart, !isMissingEnd);
+            throw RemyException.createForMissingEventDetails(
+                    !isMissingDescription, !isMissingStart, !isMissingEnd);
         }
 
         LocalDateTime startDateTime = DateParser.parseDateTime(start);
@@ -257,6 +259,6 @@ public class Parser {
             return new Event(description, startDate, endDate);
         }
 
-        throw new RemyException(true, false, false);
+        throw RemyException.createForMissingEventDetails(true, false, false);
     }
 }
