@@ -91,6 +91,8 @@ public class Remy {
             tasks = new TaskList();
             hasLoadingError = true;
         }
+
+        assert tasks != null : "Task list must be initialized after loading";
     }
 
     /**
@@ -151,6 +153,8 @@ public class Remy {
     /** Executes one parsed command and updates the session's exit state. */
     private void executeCommand(String message, Ui ui) {
         Command command = parser.parse(message);
+        assert command != null : "Parser must return a command or throw an exception";
+
         command.execute(tasks, ui, storage);
         hasExited = command.isExit();
     }

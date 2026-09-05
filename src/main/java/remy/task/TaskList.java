@@ -24,6 +24,10 @@ public class TaskList {
      * @param tasks tasks to add to this list
      */
     public TaskList(List<Task> tasks) {
+        assert tasks != null : "Initial task collection must not be null";
+        assert tasks.stream().noneMatch(task -> task == null)
+                : "Initial task collection must not contain null";
+
         this.tasks = new ArrayList<>(tasks);
     }
 
@@ -33,6 +37,8 @@ public class TaskList {
      * @param task task to add
      */
     public void add(Task task) {
+        assert task != null : "Task to add must not be null";
+
         tasks.add(task);
     }
 
@@ -81,6 +87,9 @@ public class TaskList {
      * @return matching tasks in their current order
      */
     public List<Task> find(String keyword) {
+        assert keyword != null : "Search keyword must not be null";
+        assert !keyword.isBlank() : "Search keyword must not be blank";
+
         String lowercaseKeyword = keyword.toLowerCase(Locale.ROOT);
         return tasks.stream()
                 .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(lowercaseKeyword))
