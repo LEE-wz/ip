@@ -111,6 +111,10 @@ public class Parser {
      * @throws RemyException if the index is missing or is not an integer
      */
     private int parseTaskIndex(String message, CommandType commandType) {
+        assert commandType == CommandType.MARK || commandType == CommandType.UNMARK
+                || commandType == CommandType.DELETE
+                : "Task index parsing requires an indexed command";
+
         return switch (commandType) {
             case MARK -> parseTaskIndex(message, 4,
                     "you forgot which task to mark as done -_-.", "you have to put an integer :0");
@@ -154,6 +158,10 @@ public class Parser {
      * @throws RemyException if required task details are invalid or missing
      */
     private Task parseTask(String message, CommandType commandType) {
+        assert commandType == CommandType.TODO || commandType == CommandType.DEADLINE
+                || commandType == CommandType.EVENT
+                : "Task parsing requires a task-creation command";
+
         return switch (commandType) {
             case TODO -> parseTodo(message);
             case DEADLINE -> parseDeadline(message);

@@ -36,6 +36,9 @@ public class MainWindow extends AnchorPane {
     /** Configures automatic scrolling after the FXML controls have been injected. */
     @FXML
     public void initialize() {
+        assert scrollPane != null : "FXML loader must inject the scroll pane";
+        assert dialogContainer != null : "FXML loader must inject the dialog container";
+
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
@@ -45,6 +48,8 @@ public class MainWindow extends AnchorPane {
      * @param remy chatbot that handles commands entered in this window
      */
     public void setRemy(Remy remy) {
+        assert remy != null : "Main window requires a chatbot instance";
+
         this.remy = remy;
         dialogContainer.getChildren()
                 .add(DialogBox.getRemyDialog(remy.getGreeting(), remyImage));
@@ -56,6 +61,8 @@ public class MainWindow extends AnchorPane {
      */
     @FXML
     private void handleUserInput() {
+        assert remy != null : "Chatbot must be set before user input is handled";
+
         String input = userInput.getText();
         String response = remy.getResponse(input);
         if (!input.isBlank()) {

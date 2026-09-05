@@ -52,6 +52,9 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDate byDate, LocalDateTime byDateTime) {
         super(description);
+        assert (byDate == null) != (byDateTime == null)
+                : "Deadline must have exactly one endpoint representation";
+
         this.byDate = byDate;
         this.byDateTime = byDateTime;
     }
