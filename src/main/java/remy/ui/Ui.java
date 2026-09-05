@@ -12,6 +12,9 @@ import remy.task.Task;
  * @author LEE-wz
  */
 public class Ui {
+    /** Divider used to frame messages shown to the user. */
+    private static final String MESSAGE_DIVIDER = "____________________________________________________________";
+
     /** Reads commands entered through the console. */
     private final Scanner scanner;
 
@@ -64,9 +67,8 @@ public class Ui {
 
     /** Displays the greeting shown when a chat session begins. */
     public void showGreeting() {
-        output.println(
-                """
-                        ____________________________________________________________
+        output.println(MESSAGE_DIVIDER + "\n"
+                + """
                          _____                     \s
                         |  __ \\                    \s
                         | |__) | ___ _ __ ___  _   _
@@ -78,18 +80,15 @@ public class Ui {
                         Yo! I am Remy the rat from Ratatouille.
                         How can I serve you today? :D
 
-                        ____________________________________________________________
-                        """);
+                        """
+                + MESSAGE_DIVIDER + "\n");
     }
 
     /** Displays the farewell shown when a chat session ends. */
     public void showFarewell() {
-        output.println(
-                """
-                        ____________________________________________________________
-                        Cya. Call me again when you need me!
-                        ____________________________________________________________
-                        """);
+        output.println(MESSAGE_DIVIDER);
+        output.println("Cya. Call me again when you need me!");
+        output.println(MESSAGE_DIVIDER + "\n");
     }
 
     /**
@@ -107,14 +106,14 @@ public class Ui {
      * @param tasks tasks to display
      */
     public void showTaskList(List<Task> tasks) {
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
         if (tasks.isEmpty()) {
             output.println("There are no tasks in your list yet.");
         } else {
             output.println("Here are the tasks in your list:");
             showNumberedTasks(tasks);
         }
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
     }
 
     /**
@@ -123,10 +122,10 @@ public class Ui {
      * @param tasks matching tasks to display
      */
     public void showMatchingTasks(List<Task> tasks) {
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
         output.println("Here are the matching tasks in your list:");
         showNumberedTasks(tasks);
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
     }
 
     /** Displays tasks with one-based numbering. */
@@ -144,11 +143,11 @@ public class Ui {
      */
     public void showTaskAdded(Task task, int taskCount) {
         String result =
-                "____________________________________________________________\n"
+                MESSAGE_DIVIDER + "\n"
                         + "Okay, I have helped you create a task:\n"
                         + task + "\n"
                         + "Now you have " + taskCount + " task(s) in the list. Better hurry before it piles up!\n"
-                        + "____________________________________________________________\n";
+                        + MESSAGE_DIVIDER + "\n";
         output.println(result);
     }
 
@@ -160,11 +159,11 @@ public class Ui {
      */
     public void showTaskDeleted(Task task, int taskCount) {
         String result =
-                "____________________________________________________________\n"
+                MESSAGE_DIVIDER + "\n"
                         + "Okay, I have helped you removed a task, remember to thank me:\n"
                         + task + "\n"
                         + "Now you have " + taskCount + " tasks in the list. Good luck LOL.\n"
-                        + "____________________________________________________________\n";
+                        + MESSAGE_DIVIDER + "\n";
         output.println(result);
     }
 
@@ -174,10 +173,10 @@ public class Ui {
      * @param task the task marked as done
      */
     public void showTaskMarkedAsDone(Task task) {
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
         output.println(" Nice! I've marked this task as done:\n");
         output.println(task);
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
     }
 
     /**
@@ -186,10 +185,10 @@ public class Ui {
      * @param task the task marked as undone
      */
     public void showTaskMarkedAsUndone(Task task) {
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
         output.println(" OK, I've marked this task as not done yet:\n");
         output.println(task);
-        output.println("____________________________________________________________\n");
+        output.println(MESSAGE_DIVIDER + "\n");
     }
 
     /** Displays the error shown when saving tasks fails. */

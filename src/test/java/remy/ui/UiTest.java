@@ -71,4 +71,17 @@ class UiTest {
                 """;
         assertEquals(expectedOutput, output.toString());
     }
+
+    @Test
+    void showFarewell_noArguments_farewellBetweenDividersDisplayed() {
+        new Ui().showFarewell();
+
+        String expectedOutput = """
+                ____________________________________________________________
+                Cya. Call me again when you need me!
+                ____________________________________________________________
+
+                """;
+        assertEquals(expectedOutput, output.toString());
+    }
 }
