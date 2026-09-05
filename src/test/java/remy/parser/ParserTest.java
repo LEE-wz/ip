@@ -99,11 +99,21 @@ class ParserTest {
         Parser parser = new Parser();
 
         assertThrows(RemyException.class, () -> parser.parse(null));
-        assertThrows(RemyException.class, () -> parser.parse("todo"));
         assertThrows(RemyException.class, () -> parser.parse("deadline submit /by tomorrow"));
-        assertThrows(RemyException.class, () -> parser.parse("event meeting /from 23/8/2026"));
         assertThrows(RemyException.class, () -> parser.parse("mark one"));
+    }
+
+    @Test
+    void parse_commandsWithoutRequiredArguments_remyExceptionThrown() {
+        Parser parser = new Parser();
+
+        assertThrows(RemyException.class, () -> parser.parse("todo"));
+        assertThrows(RemyException.class, () -> parser.parse("deadline"));
+        assertThrows(RemyException.class, () -> parser.parse("event"));
         assertThrows(RemyException.class, () -> parser.parse("find"));
+        assertThrows(RemyException.class, () -> parser.parse("mark"));
+        assertThrows(RemyException.class, () -> parser.parse("unmark"));
+        assertThrows(RemyException.class, () -> parser.parse("delete"));
     }
 
     /** Executes a parsed command using isolated persistence for the test. */

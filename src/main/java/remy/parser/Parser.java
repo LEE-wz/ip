@@ -22,6 +22,41 @@ import remy.task.Todo;
  * @author LEE-wz
  */
 public class Parser {
+    /** Command keyword for ending the application. */
+    private static final String BYE_COMMAND = "bye";
+
+    /** Command keyword for listing tasks. */
+    private static final String LIST_COMMAND = "list";
+
+    /** Command keyword for finding tasks. */
+    private static final String FIND_COMMAND = "find";
+
+    /** Command keyword for deleting a task. */
+    private static final String DELETE_COMMAND = "delete";
+
+    /** Command keyword for marking a task as completed. */
+    private static final String MARK_COMMAND = "mark";
+
+    /** Command keyword for marking a task as incomplete. */
+    private static final String UNMARK_COMMAND = "unmark";
+
+    /** Command keyword for creating a to-do task. */
+    private static final String TODO_COMMAND = "todo";
+
+    /** Command keyword for creating a deadline task. */
+    private static final String DEADLINE_COMMAND = "deadline";
+
+    /** Command keyword for creating an event task. */
+    private static final String EVENT_COMMAND = "event";
+
+    /** Delimiter introducing a deadline endpoint. */
+    private static final String DEADLINE_DELIMITER = "/by";
+
+    /** Delimiter introducing an event's start endpoint. */
+    private static final String EVENT_START_DELIMITER = "/from";
+
+    /** Delimiter introducing an event's end endpoint. */
+    private static final String EVENT_END_DELIMITER = "/to";
 
     /**
      * Parses a user message into an executable command.
@@ -55,32 +90,32 @@ public class Parser {
             return CommandType.UNKNOWN;
         }
 
-        if (message.equals("bye")) {
+        if (message.equals(BYE_COMMAND)) {
             return CommandType.BYE;
         }
-        if (message.equals("list")) {
+        if (message.equals(LIST_COMMAND)) {
             return CommandType.LIST;
         }
-        if (message.equals("find") || (message.startsWith("find")
-                && Character.isWhitespace(message.charAt("find".length())))) {
+        if (message.equals(FIND_COMMAND) || (message.startsWith(FIND_COMMAND)
+                && Character.isWhitespace(message.charAt(FIND_COMMAND.length())))) {
             return CommandType.FIND;
         }
-        if (message.startsWith("delete")) {
+        if (message.startsWith(DELETE_COMMAND)) {
             return CommandType.DELETE;
         }
-        if (message.startsWith("mark")) {
+        if (message.startsWith(MARK_COMMAND)) {
             return CommandType.MARK;
         }
-        if (message.startsWith("unmark")) {
+        if (message.startsWith(UNMARK_COMMAND)) {
             return CommandType.UNMARK;
         }
-        if (message.startsWith("todo")) {
+        if (message.startsWith(TODO_COMMAND)) {
             return CommandType.TODO;
         }
-        if (message.startsWith("deadline")) {
+        if (message.startsWith(DEADLINE_COMMAND)) {
             return CommandType.DEADLINE;
         }
-        if (message.startsWith("event")) {
+        if (message.startsWith(EVENT_COMMAND)) {
             return CommandType.EVENT;
         }
 
@@ -95,7 +130,7 @@ public class Parser {
      * @throws RemyException if no keyword is supplied
      */
     private String parseFindKeyword(String message) {
-        String keyword = message.substring("find".length()).strip();
+        String keyword = message.substring(FIND_COMMAND.length()).strip();
         if (keyword.isEmpty()) {
             throw new RemyException("You need to provide a keyword to find.");
         }
@@ -112,11 +147,11 @@ public class Parser {
      */
     private int parseTaskIndex(String message, CommandType commandType) {
         return switch (commandType) {
-            case MARK -> parseTaskIndex(message, 4,
+            case MARK -> parseTaskIndex(message, MARK_COMMAND,
                     "you forgot which task to mark as done -_-.", "you have to put an integer :0");
-            case UNMARK -> parseTaskIndex(message, 6,
+            case UNMARK -> parseTaskIndex(message, UNMARK_COMMAND,
                     "you forgot which task to unmark as undone -_-.", "you have to put an integer :0");
-            case DELETE -> parseTaskIndex(message, 6,
+            case DELETE -> parseTaskIndex(message, DELETE_COMMAND,
                     "You forgot which task to delete -_-.", "You have to put an integer :0");
             default -> throw new IllegalArgumentException("Command does not contain a task index: " + commandType);
         };
@@ -126,19 +161,19 @@ public class Parser {
      * Parses an indexed command's integer argument.
      *
      * @param message user message containing the index
-     * @param commandLength length of the command keyword
+     * @param commandKeyword command keyword before the index
      * @param missingIndexMessage error message for an omitted index
      * @param invalidIndexMessage error message for a non-integer index
      * @return parsed one-based task index
      */
-    private int parseTaskIndex(String message, int commandLength, String missingIndexMessage,
+    private int parseTaskIndex(String message, String commandKeyword, String missingIndexMessage,
             String invalidIndexMessage) {
-        if (message.strip().length() == commandLength) {
+        if (message.strip().length() == commandKeyword.length()) {
             throw new RemyException(missingIndexMessage);
         }
 
         try {
-            String index = message.substring(commandLength).strip();
+            String index = message.substring(commandKeyword.length()).strip();
             return Integer.parseInt(index);
         } catch (NumberFormatException e) {
             throw new RemyException(invalidIndexMessage);
@@ -169,11 +204,11 @@ public class Parser {
      * @return a todo task
      */
     private Todo parseTodo(String message) {
-        if (message.strip().length() == 4) {
+        if (message.strip().length() == TODO_COMMAND.length()) {
             throw RemyException.createForMissingTodoDescription();
         }
 
-        String description = message.substring(4).strip();
+        String description = message.substring(TODO_COMMAND.length()).strip();
         return new Todo(description);
     }
 
@@ -184,16 +219,16 @@ public class Parser {
      * @return a deadline task
      */
     private Deadline parseDeadline(String message) {
-        if (message.length() == 8) {
+        if (message.length() == DEADLINE_COMMAND.length()) {
             throw RemyException.createForMissingDeadlineDetails(false, false);
         }
 
-        String[] messageSplit = message.split("/by", 0);
+        String[] messageSplit = message.split(DEADLINE_DELIMITER, 0);
         if (messageSplit.length == 1) {
             throw RemyException.createForMissingDeadlineDetails(true, false);
         }
 
-        String description = messageSplit[0].substring(8).strip();
+        String description = messageSplit[0].substring(DEADLINE_COMMAND.length()).strip();
         String deadline = messageSplit[1].strip();
         boolean isMissingDescription = description.isEmpty();
         boolean isMissingDeadline = deadline.isEmpty();
@@ -222,20 +257,21 @@ public class Parser {
      * @return an event task
      */
     private Event parseEvent(String message) {
-        if (message.length() == 5) {
+        if (message.length() == EVENT_COMMAND.length()) {
             throw RemyException.createForMissingEventDetails(false, false, false);
         }
 
-        String[] messageSplit = message.split("/from|/to", 0);
+        String eventDelimiterPattern = EVENT_START_DELIMITER + "|" + EVENT_END_DELIMITER;
+        String[] messageSplit = message.split(eventDelimiterPattern, 0);
         if (messageSplit.length == 1) {
             throw RemyException.createForMissingEventDetails(true, false, false);
         }
 
-        String description = messageSplit[0].substring(5).strip();
+        String description = messageSplit[0].substring(EVENT_COMMAND.length()).strip();
         boolean isMissingDescription = description.isEmpty();
         if (messageSplit.length == 2) {
-            boolean hasFrom = message.contains("/from");
-            boolean hasTo = message.contains("/to");
+            boolean hasFrom = message.contains(EVENT_START_DELIMITER);
+            boolean hasTo = message.contains(EVENT_END_DELIMITER);
             throw RemyException.createForMissingEventDetails(!isMissingDescription, hasFrom, hasTo);
         }
 
