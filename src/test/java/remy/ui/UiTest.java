@@ -50,7 +50,7 @@ class UiTest {
                 ____________________________________________________________
 
                 """;
-        assertEquals(expectedOutput, output.toString());
+        assertEquals(expectedOutput, getNormalizedOutput());
     }
 
     @Test
@@ -69,7 +69,7 @@ class UiTest {
                 ____________________________________________________________
 
                 """;
-        assertEquals(expectedOutput, output.toString());
+        assertEquals(expectedOutput, getNormalizedOutput());
     }
 
     @Test
@@ -82,6 +82,10 @@ class UiTest {
                 ____________________________________________________________
 
                 """;
-        assertEquals(expectedOutput, output.toString());
+        assertEquals(expectedOutput, getNormalizedOutput());
+    }
+
+    private String getNormalizedOutput() {
+        return output.toString().replace(System.lineSeparator(), "\n");
     }
 }
