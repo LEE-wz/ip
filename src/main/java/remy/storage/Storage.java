@@ -22,6 +22,27 @@ import remy.task.Todo;
  * @author LEE-wz
  */
 public class Storage {
+    /** Marker identifying a persisted to-do task. */
+    private static final String TODO_TASK_MARKER = "[T]";
+
+    /** Marker identifying a persisted deadline task. */
+    private static final String DEADLINE_TASK_MARKER = "[D]";
+
+    /** Marker identifying a persisted event task. */
+    private static final String EVENT_TASK_MARKER = "[E]";
+
+    /** Marker identifying an incomplete persisted task. */
+    private static final String INCOMPLETE_STATUS_MARKER = "[ ] ";
+
+    /** Marker identifying a completed persisted task. */
+    private static final String COMPLETED_STATUS_MARKER = "[X] ";
+
+    /** Index immediately after a persisted task-type marker. */
+    private static final int TASK_TYPE_MARKER_END_INDEX = 3;
+
+    /** Index at which persisted task details begin. */
+    private static final int TASK_DETAILS_START_INDEX = 7;
+
     /** File used to persist tasks between chat sessions. */
     private final Path taskFile;
 
@@ -112,23 +133,22 @@ public class Storage {
      * @return the parsed task, or null when the line is invalid
      */
     private Task parseTask(String line) {
-        if (line == null || line.length() < 8 || line.charAt(0) != '[' || line.charAt(2) != ']'
-                || line.charAt(3) != '[' || (line.charAt(4) != ' ' && line.charAt(4) != 'X')
-                || line.charAt(5) != ']' || line.charAt(6) != ' ') {
+        if (!hasValidTaskStructure(line)) {
             return null;
         }
 
-        boolean isDone = line.charAt(4) == 'X';
-        String taskDetails = line.substring(7);
+        String taskTypeMarker = line.substring(0, TASK_TYPE_MARKER_END_INDEX);
+        String taskStatusMarker = line.substring(TASK_TYPE_MARKER_END_INDEX, TASK_DETAILS_START_INDEX);
+        String taskDetails = line.substring(TASK_DETAILS_START_INDEX);
         if (taskDetails.strip().isEmpty()) {
             return null;
         }
 
         Task task;
-        switch (line.charAt(1)) {
-            case 'T' -> task = new Todo(taskDetails);
-            case 'D' -> task = parseDeadlineTask(taskDetails);
-            case 'E' -> task = parseEventTask(taskDetails);
+        switch (taskTypeMarker) {
+            case TODO_TASK_MARKER -> task = new Todo(taskDetails);
+            case DEADLINE_TASK_MARKER -> task = parseDeadlineTask(taskDetails);
+            case EVENT_TASK_MARKER -> task = parseEventTask(taskDetails);
             default -> {
                 return null;
             }
@@ -138,10 +158,26 @@ public class Storage {
             return null;
         }
 
-        if (isDone) {
+        if (taskStatusMarker.equals(COMPLETED_STATUS_MARKER)) {
             task.markAsDone();
         }
         return task;
+    }
+
+    /**
+     * Returns whether a saved line has enough content and a recognized completion marker.
+     *
+     * @param line saved task line to inspect
+     * @return true when the line can be split safely into its persisted components
+     */
+    private boolean hasValidTaskStructure(String line) {
+        if (line == null || line.length() <= TASK_DETAILS_START_INDEX) {
+            return false;
+        }
+
+        String taskStatusMarker = line.substring(TASK_TYPE_MARKER_END_INDEX, TASK_DETAILS_START_INDEX);
+        return taskStatusMarker.equals(INCOMPLETE_STATUS_MARKER)
+                || taskStatusMarker.equals(COMPLETED_STATUS_MARKER);
     }
 
     /**
