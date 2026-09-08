@@ -22,6 +22,7 @@ On Windows, use `gradlew.bat run` instead. Enter a command in the field at the b
 | Add an event | `event DESCRIPTION /from DATE /to DATE` | `event tutorial /from 24/9/2026 1400 /to 24/9/2026 1500` |
 | Show all tasks | `list` | `list` |
 | Find tasks | `find KEYWORD` | `find report` |
+| Sort tasks chronologically | `sort /by date [/order asc\|desc]` | `sort /by date /order asc` |
 | Mark a task done | `mark NUMBER` | `mark 1` |
 | Mark a task undone | `unmark NUMBER` | `unmark 1` |
 | Delete a task | `delete NUMBER` | `delete 1` |
@@ -29,6 +30,10 @@ On Windows, use `gradlew.bat run` instead. Enter a command in the field at the b
 
 Dates can use formats such as `23/9/2026`, `2026-09-23`, or `23 Sep 2026`. Add a 24-hour time such as `1800` or
 `18:00` when needed.
+
+Sorting uses each deadline's due endpoint and each event's start endpoint. Todos remain after all dated tasks.
+Ascending order is used when `/order` is omitted. Sorting changes the saved task order and task numbers, but it is not
+applied automatically to tasks added later.
 
 ## Setting up in Intellij
 

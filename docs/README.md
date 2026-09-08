@@ -35,6 +35,23 @@ Here are the matching tasks in your list:
 ____________________________________________________________
 ```
 
+## Sorting tasks
+
+Use `sort /by date [/order asc|desc]` to sort tasks chronologically. Ascending order is used when `/order` is omitted.
+
+Deadlines are ordered by their due endpoints, while events are ordered by their start endpoints. Todos always appear
+after dated tasks. Sorting updates the saved task order and the task numbers shown by `list`. Tasks added afterward
+are appended normally until another sort command is used.
+
+Example: `sort /by date /order asc`
+
+```text
+Here are the tasks in your list:
+1. [D][ ] submit report (by: Aug 23 2026 18:00)
+2. [E][ ] tutorial (from: Aug 24 2026 14:00 to: Aug 24 2026 15:00)
+3. [T][ ] buy ingredients
+```
+
 ## Feature ABC
 
 // Feature details
