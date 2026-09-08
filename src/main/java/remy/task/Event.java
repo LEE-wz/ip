@@ -3,6 +3,7 @@ package remy.task;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * Represents a task that occurs over a period.
@@ -74,6 +75,19 @@ public class Event extends Task {
         this.endDate = endDate;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
+    }
+
+    /**
+     * Returns this event's start endpoint as a date-time for chronological sorting.
+     *
+     * @return start date-time, with a date-only endpoint represented as the start of its day
+     */
+    @Override
+    Optional<LocalDateTime> getChronologicalDateTime() {
+        if (startDateTime != null) {
+            return Optional.of(startDateTime);
+        }
+        return Optional.of(startDate.atStartOfDay());
     }
 
     /**

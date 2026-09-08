@@ -3,6 +3,7 @@ package remy.task;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * Represents a task with a deadline.
@@ -57,6 +58,19 @@ public class Deadline extends Task {
 
         this.byDate = byDate;
         this.byDateTime = byDateTime;
+    }
+
+    /**
+     * Returns this deadline's due endpoint as a date-time for chronological sorting.
+     *
+     * @return due date-time, with a date-only endpoint represented as the start of its day
+     */
+    @Override
+    Optional<LocalDateTime> getChronologicalDateTime() {
+        if (byDateTime != null) {
+            return Optional.of(byDateTime);
+        }
+        return Optional.of(byDate.atStartOfDay());
     }
 
     /**
