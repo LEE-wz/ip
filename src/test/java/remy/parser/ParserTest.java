@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,10 @@ import remy.command.Command;
 import remy.command.ExitCommand;
 import remy.command.FindCommand;
 import remy.command.ListCommand;
+import remy.command.SortCommand;
 import remy.exception.RemyException;
 import remy.storage.Storage;
+import remy.task.Deadline;
 import remy.task.Task;
 import remy.task.TaskList;
 import remy.task.Todo;
@@ -85,6 +88,68 @@ class ParserTest {
                 "[D][ ] Submit assignment (by: Aug 23 2026 14:30)",
                 "[E][ ] Project period (from: Aug 23 2026 to: Aug 24 2026)"),
                 tasks.getTasks().stream().map(Task::toString).toList());
+    }
+
+    @Test
+    void parse_validSortCommands_expectedOrdersApplied() {
+        Parser parser = new Parser();
+        Task laterTask = new Deadline("Submit assignment", LocalDate.of(2026, 9, 25));
+        Task earlierTask = new Deadline("Pay fees", LocalDate.of(2026, 9, 23));
+        Task todo = new Todo("Buy ingredients");
+        TaskList tasks = new TaskList(List.of(todo, laterTask, earlierTask));
+
+        Command defaultSortCommand = parser.parse("sort /by date");
+        assertInstanceOf(SortCommand.class, defaultSortCommand);
+        execute(defaultSortCommand, tasks);
+        assertEquals(List.of(earlierTask, laterTask, todo), tasks.getTasks());
+
+        Command descendingSortCommand = parser.parse("sort   /by   date   /order   desc");
+        assertInstanceOf(SortCommand.class, descendingSortCommand);
+        execute(descendingSortCommand, tasks);
+        assertEquals(List.of(laterTask, earlierTask, todo), tasks.getTasks());
+
+        Command ascendingSortCommand = parser.parse("sort /by date /order asc");
+        assertInstanceOf(SortCommand.class, ascendingSortCommand);
+        execute(ascendingSortCommand, tasks);
+        assertEquals(List.of(earlierTask, laterTask, todo), tasks.getTasks());
+    }
+
+    @Test
+    void parse_invalidSortCommands_commonGuidanceReturned() {
+        Parser parser = new Parser();
+        String expectedMessage = "____________________________________________________________\n"
+                + "Invalid sort command.\n"
+                + "Use: sort /by date [/order asc|desc]\n"
+                + "Example: sort /by date /order asc\n"
+                + "____________________________________________________________\n";
+        List<String> invalidCommands = List.of(
+                "sort",
+                "sort /by",
+                "sort /by name",
+                "sort /by deadline",
+                "sort date",
+                "sort /by date /order",
+                "sort /by date /order ascending",
+                "sort /by date /order ASC",
+                "sort /order asc /by date",
+                "sort /by date extra",
+                "sort /by date /order asc extra",
+                "sort /by date /order asc /order desc");
+
+        for (String invalidCommand : invalidCommands) {
+            RemyException exception = assertThrows(RemyException.class, () -> parser.parse(invalidCommand));
+            assertEquals(expectedMessage, exception.getMessage());
+        }
+    }
+
+    @Test
+    void parse_sortKeywordWithoutCommandBoundary_unknownCommandReturned() {
+        Parser parser = new Parser();
+
+        RemyException exception = assertThrows(RemyException.class, () ->
+                parser.parse("sorter /by date"));
+
+        assertTrue(exception.getMessage().contains("no clue what you're talking about"));
     }
 
     /**

@@ -134,7 +134,7 @@ public class Remy {
     public String getGreeting() {
         String greeting = "Yo! I am Remy, your task-management sous-chef.\n"
                 + "What can I help you remember today?\n\n"
-                + "Try: todo, deadline, event, list, find, mark, unmark, delete, or bye.";
+                + "Try: todo, deadline, event, list, find, sort, mark, unmark, delete, or bye.";
         if (hasLoadingError) {
             return greeting + "\n\nUnable to load saved tasks from data/remy.txt.";
         }

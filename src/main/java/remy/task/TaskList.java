@@ -1,6 +1,8 @@
 package remy.task;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -10,7 +12,7 @@ import java.util.Locale;
  * @author LEE-wz
  */
 public class TaskList {
-    /** The tasks in the order they were added. */
+    /** The tasks in their current canonical order. */
     private final ArrayList<Task> tasks;
 
     /** Creates an empty task list. */
@@ -94,6 +96,24 @@ public class TaskList {
         return tasks.stream()
                 .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(lowercaseKeyword))
                 .toList();
+    }
+
+    /**
+     * Sorts dated tasks chronologically while keeping undated tasks at the end.
+     *
+     * <p>Tasks with equal chronological keys retain their relative order.</p>
+     *
+     * @param isAscending true to place earlier tasks first, or false to place later tasks first
+     */
+    public void sortByDate(boolean isAscending) {
+        Comparator<LocalDateTime> dateTimeComparator = isAscending
+                ? Comparator.naturalOrder()
+                : Comparator.reverseOrder();
+        Comparator<Task> taskComparator = Comparator.comparing(
+                task -> task.getChronologicalDateTime().orElse(null),
+                Comparator.nullsLast(dateTimeComparator));
+
+        tasks.sort(taskComparator);
     }
 
     /**

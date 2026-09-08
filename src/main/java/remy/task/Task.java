@@ -1,5 +1,8 @@
 package remy.task;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 /**
  * Represents a task with a description and completion state.
  *
@@ -32,6 +35,15 @@ public class Task {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns the date-time used to sort this task chronologically, if one exists.
+     *
+     * @return an empty value because a general task has no chronological endpoint
+     */
+    Optional<LocalDateTime> getChronologicalDateTime() {
+        return Optional.empty();
     }
 
     /**

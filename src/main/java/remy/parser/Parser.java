@@ -10,6 +10,7 @@ import remy.command.ExitCommand;
 import remy.command.FindCommand;
 import remy.command.ListCommand;
 import remy.command.MarkCommand;
+import remy.command.SortCommand;
 import remy.exception.RemyException;
 import remy.task.Deadline;
 import remy.task.Event;
@@ -30,6 +31,14 @@ public class Parser {
 
     /** Command keyword for finding tasks. */
     private static final String FIND_COMMAND = "find";
+
+    /** Command keyword for sorting tasks. */
+    private static final String SORT_COMMAND = "sort";
+
+    /** Guidance shown when a sort command does not follow the supported syntax. */
+    private static final String INVALID_SORT_MESSAGE = "Invalid sort command.\n"
+            + "Use: sort /by date [/order asc|desc]\n"
+            + "Example: sort /by date /order asc";
 
     /** Command keyword for deleting a task. */
     private static final String DELETE_COMMAND = "delete";
@@ -71,6 +80,7 @@ public class Parser {
             case BYE -> new ExitCommand();
             case LIST -> new ListCommand();
             case FIND -> new FindCommand(parseFindKeyword(message));
+            case SORT -> new SortCommand(parseSortOrder(message));
             case DELETE -> new DeleteCommand(parseTaskIndex(message, commandType));
             case MARK -> new MarkCommand(parseTaskIndex(message, commandType), true);
             case UNMARK -> new MarkCommand(parseTaskIndex(message, commandType), false);
@@ -99,6 +109,10 @@ public class Parser {
         if (message.equals(FIND_COMMAND) || (message.startsWith(FIND_COMMAND)
                 && Character.isWhitespace(message.charAt(FIND_COMMAND.length())))) {
             return CommandType.FIND;
+        }
+        if (message.equals(SORT_COMMAND) || (message.startsWith(SORT_COMMAND)
+                && Character.isWhitespace(message.charAt(SORT_COMMAND.length())))) {
+            return CommandType.SORT;
         }
         if (message.startsWith(DELETE_COMMAND)) {
             return CommandType.DELETE;
@@ -135,6 +149,38 @@ public class Parser {
             throw new RemyException("You need to provide a keyword to find.");
         }
         return keyword;
+    }
+
+    /**
+     * Parses whether a sort command requests ascending chronological order.
+     *
+     * @param message sort command to parse
+     * @return true for ascending order, or false for descending order
+     * @throws RemyException if the command does not follow the supported sort syntax
+     */
+    private boolean parseSortOrder(String message) {
+        String arguments = message.substring(SORT_COMMAND.length()).strip();
+        String[] argumentTokens = arguments.isEmpty() ? new String[0] : arguments.split("\\s+");
+
+        boolean hasValidCriterion = argumentTokens.length >= 2
+                && argumentTokens[0].equals("/by")
+                && argumentTokens[1].equals("date");
+        if (!hasValidCriterion) {
+            throw new RemyException(INVALID_SORT_MESSAGE);
+        }
+
+        if (argumentTokens.length == 2) {
+            return true;
+        }
+
+        boolean hasValidOrder = argumentTokens.length == 4
+                && argumentTokens[2].equals("/order")
+                && (argumentTokens[3].equals("asc") || argumentTokens[3].equals("desc"));
+        if (!hasValidOrder) {
+            throw new RemyException(INVALID_SORT_MESSAGE);
+        }
+
+        return argumentTokens[3].equals("asc");
     }
 
     /**
