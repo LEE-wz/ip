@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -134,6 +136,81 @@ class TaskListTest {
         TaskList taskList = new TaskList(List.of(new Todo("Read book")));
 
         assertThrows(AssertionError.class, () -> taskList.find("   "));
+    }
+
+    @Test
+    void sortByDate_mixedTasksAscending_datedTasksSortedAndTodosRemainLast() {
+        Task firstTodo = new Todo("Buy ingredients");
+        Task timedDeadline = new Deadline("Submit report", LocalDateTime.of(2026, 9, 23, 18, 0));
+        timedDeadline.markAsDone();
+        Task laterEvent = new Event("Workshop", LocalDateTime.of(2026, 9, 25, 9, 0),
+                LocalDateTime.of(2026, 9, 25, 11, 0));
+        Task dateOnlyDeadline = new Deadline("Pay fees", LocalDate.of(2026, 9, 23));
+        Task earlierEvent = new Event("Tutorial", LocalDateTime.of(2026, 9, 23, 14, 0),
+                LocalDateTime.of(2026, 9, 23, 15, 0));
+        Task secondTodo = new Todo("Clean kitchen");
+        TaskList taskList = new TaskList(List.of(
+                firstTodo, timedDeadline, laterEvent, dateOnlyDeadline, earlierEvent, secondTodo));
+
+        taskList.sortByDate(true);
+
+        assertIterableEquals(List.of(
+                dateOnlyDeadline, earlierEvent, timedDeadline, laterEvent, firstTodo, secondTodo),
+                taskList.getTasks());
+    }
+
+    @Test
+    void sortByDate_mixedTasksDescending_datedTasksReversedAndTodosRemainLast() {
+        Task todo = new Todo("Buy ingredients");
+        Task dateOnlyDeadline = new Deadline("Pay fees", LocalDate.of(2026, 9, 23));
+        Task timedDeadline = new Deadline("Submit report", LocalDateTime.of(2026, 9, 23, 18, 0));
+        Task event = new Event("Workshop", LocalDateTime.of(2026, 9, 25, 9, 0),
+                LocalDateTime.of(2026, 9, 30, 11, 0));
+        TaskList taskList = new TaskList(List.of(todo, dateOnlyDeadline, event, timedDeadline));
+
+        taskList.sortByDate(false);
+
+        assertIterableEquals(List.of(event, timedDeadline, dateOnlyDeadline, todo), taskList.getTasks());
+    }
+
+    @Test
+    void sortByDate_equalKeysAndTodos_relativeOrderPreserved() {
+        Task firstTodo = new Todo("Buy ingredients");
+        Task firstDatedTask = new Deadline("Pay fees", LocalDate.of(2026, 9, 23));
+        Task secondTodo = new Todo("Clean kitchen");
+        Task secondDatedTask = new Event("Midnight event", LocalDateTime.of(2026, 9, 23, 0, 0),
+                LocalDateTime.of(2026, 10, 1, 0, 0));
+        TaskList taskList = new TaskList(List.of(firstTodo, firstDatedTask, secondTodo, secondDatedTask));
+
+        taskList.sortByDate(true);
+
+        assertIterableEquals(List.of(firstDatedTask, secondDatedTask, firstTodo, secondTodo),
+                taskList.getTasks());
+    }
+
+    @Test
+    void sortByDate_eventEndsAfterDeadline_eventOrderedByEarlierStart() {
+        Task longEvent = new Event("Conference", LocalDate.of(2026, 9, 20),
+                LocalDate.of(2026, 9, 30));
+        Task deadline = new Deadline("Submit report", LocalDate.of(2026, 9, 25));
+        TaskList taskList = new TaskList(List.of(deadline, longEvent));
+
+        taskList.sortByDate(true);
+
+        assertIterableEquals(List.of(longEvent, deadline), taskList.getTasks());
+    }
+
+    @Test
+    void add_taskAfterSorting_taskAppendedWithoutAutomaticResort() {
+        Task laterTask = new Deadline("Submit report", LocalDate.of(2026, 9, 25));
+        Task earlierTask = new Deadline("Pay fees", LocalDate.of(2026, 9, 23));
+        Task newlyAddedEarlierTask = new Deadline("Book venue", LocalDate.of(2026, 9, 20));
+        TaskList taskList = new TaskList(List.of(laterTask, earlierTask));
+        taskList.sortByDate(true);
+
+        taskList.add(newlyAddedEarlierTask);
+
+        assertIterableEquals(List.of(earlierTask, laterTask, newlyAddedEarlierTask), taskList.getTasks());
     }
 
     @Test
