@@ -69,7 +69,7 @@ class RemyTest {
                 4. [E][ ] workshop (from: Aug 25 2026 09:00 to: Aug 25 2026 11:00)
                 5. [T][ ] buy ingredients
                 """.strip();
-        assertEquals(expectedResponse, response);
+        assertEquals(expectedResponse, response.replace(System.lineSeparator(), "\n"));
     }
 
     @Test
