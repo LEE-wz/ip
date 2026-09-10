@@ -38,11 +38,15 @@ public class MarkCommand extends Command {
         Task task = tasks.get(taskIndex - 1);
         if (isDone) {
             task.markAsDone();
-            ui.showTaskMarkedAsDone(task);
         } else {
             task.markAsUndone();
-            ui.showTaskMarkedAsUndone(task);
         }
         saveTasks(tasks, ui, storage);
+
+        if (isDone) {
+            ui.showTaskMarkedAsDone(task);
+        } else {
+            ui.showTaskMarkedAsUndone(task);
+        }
     }
 }

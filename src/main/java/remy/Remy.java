@@ -1,14 +1,16 @@
 package remy;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 import remy.command.Command;
 import remy.exception.RemyException;
 import remy.parser.Parser;
 import remy.storage.Storage;
+import remy.storage.StorageException;
+import remy.storage.StorageLoadResult;
 import remy.task.TaskList;
 import remy.ui.Ui;
 
@@ -31,8 +33,8 @@ public class Remy {
     /** Loads and saves tasks between chat sessions. */
     private final Storage storage;
 
-    /** Records whether saved tasks could not be loaded at startup. */
-    private boolean hasLoadingError;
+    /** Warning produced when some or all saved tasks could not be loaded at startup. */
+    private String loadingWarning;
 
     /** Records whether the user has ended this chat session. */
     private boolean hasExited;
@@ -62,8 +64,8 @@ public class Remy {
     private void runCommandLoop() {
         Ui ui = new Ui();
         ui.showGreeting();
-        if (hasLoadingError) {
-            ui.showLoadingError();
+        if (loadingWarning != null) {
+            ui.showLoadingWarning(loadingWarning);
         }
 
         while (!hasExited) {
@@ -86,10 +88,19 @@ public class Remy {
     /** Loads saved tasks from the hard disk when the chatbot starts. */
     private void loadTasks() {
         try {
-            tasks = storage.load();
-        } catch (IOException | SecurityException e) {
+            StorageLoadResult loadResult = storage.loadWithRecoveryDetails();
+            tasks = loadResult.getTasks();
+            if (loadResult.hasInvalidLines()) {
+                String lineNumbers = loadResult.getInvalidLineNumbers().stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(", "));
+                loadingWarning = "Skipped invalid saved task data on line(s) " + lineNumbers
+                        + " of \"" + storage.getTaskFilePath() + "\". Valid tasks were loaded; invalid lines "
+                        + "will be discarded when tasks are next saved.";
+            }
+        } catch (StorageException e) {
             tasks = new TaskList();
-            hasLoadingError = true;
+            loadingWarning = e.getMessage() + " Remy started with an empty task list.";
         }
 
         assert tasks != null : "Task list must be initialized after loading";
@@ -135,8 +146,8 @@ public class Remy {
         String greeting = "Yo! I am Remy, your task-management sous-chef.\n"
                 + "What can I help you remember today?\n\n"
                 + "Try: todo, deadline, event, list, find, sort, mark, unmark, delete, or bye.";
-        if (hasLoadingError) {
-            return greeting + "\n\nUnable to load saved tasks from data/remy.txt.";
+        if (loadingWarning != null) {
+            return greeting + "\n\n" + loadingWarning;
         }
         return greeting;
     }

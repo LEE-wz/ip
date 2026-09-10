@@ -159,6 +159,68 @@ class RemyTest {
         assertTrue(laterResponse.contains("This chat has ended"));
     }
 
+    @Test
+    void constructor_taskFileContainsInvalidData_validTasksLoadedAndGreetingWarnsUser() throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(taskFile, String.join(System.lineSeparator(),
+                "[T][ ] prepare ingredients",
+                "unexpected content",
+                "[T][X] wash dishes"));
+
+        Remy remy = new Remy(taskFile.toString());
+
+        assertTrue(remy.getGreeting().contains("line(s) 2"));
+        assertTrue(remy.getGreeting().contains(taskFile.toString()));
+        assertTrue(remy.getResponse("list").contains("prepare ingredients"));
+        assertTrue(remy.getResponse("list").contains("wash dishes"));
+    }
+
+    @Test
+    void constructor_taskPathIsDirectory_emptyTaskListAndActionableGreetingReturned() throws IOException {
+        Path taskPath = temporaryDirectory.resolve("tasks");
+        Files.createDirectory(taskPath);
+
+        Remy remy = new Remy(taskPath.toString());
+
+        assertTrue(remy.getGreeting().contains("is a directory, not a file"));
+        assertTrue(remy.getGreeting().contains("started with an empty task list"));
+        assertTrue(remy.getResponse("list").contains("There are no tasks"));
+    }
+
+    @Test
+    void getResponse_taskFileCannotBeSaved_warningReturnedAndSessionChangeRetained() throws IOException {
+        Path parentPath = temporaryDirectory.resolve("not-a-folder");
+        Files.writeString(parentPath, "blocking file");
+        Path taskFile = parentPath.resolve("tasks.txt");
+        Remy remy = new Remy(taskFile.toString());
+
+        String response = remy.getResponse("todo prepare ingredients");
+        String listResponse = remy.getResponse("list");
+
+        assertTrue(response.contains("Unable to save tasks to \"" + taskFile + "\""));
+        assertTrue(response.contains("kept only for this session"));
+        assertTrue(response.contains("prepare ingredients"));
+        assertTrue(listResponse.contains("prepare ingredients"));
+    }
+
+    @Test
+    void getResponse_markCannotBeSaved_warningShownBeforeConfirmationAndChangeRetained() throws IOException {
+        Path parentPath = Files.createDirectory(temporaryDirectory.resolve("data"));
+        Path taskFile = parentPath.resolve("tasks.txt");
+        Remy remy = new Remy(taskFile.toString());
+        remy.getResponse("todo prepare ingredients");
+        Files.delete(taskFile);
+        Files.delete(parentPath);
+        Files.writeString(parentPath, "blocking file");
+
+        String response = remy.getResponse("mark 1");
+        String listResponse = remy.getResponse("list");
+
+        assertTrue(response.indexOf("Unable to save tasks") < response.indexOf("marked this task as done"));
+        assertTrue(response.contains("kept only for this session"));
+        assertTrue(listResponse.contains("[T][X] prepare ingredients"));
+    }
+
     /** Returns a Remy instance with isolated test storage. */
     private Remy createRemy() {
         return new Remy(temporaryDirectory.resolve("tasks.txt").toString());

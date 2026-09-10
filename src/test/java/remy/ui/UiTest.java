@@ -85,6 +85,20 @@ class UiTest {
         assertEquals(expectedOutput, getNormalizedOutput());
     }
 
+    @Test
+    void showSavingError_actionableMessage_messageDisplayed() {
+        new Ui().showSavingError("Unable to save: access was denied.");
+
+        assertEquals("Unable to save: access was denied.\n", getNormalizedOutput());
+    }
+
+    @Test
+    void showLoadingWarning_recoveryMessage_messageDisplayed() {
+        new Ui().showLoadingWarning("Skipped invalid data on line 2.");
+
+        assertEquals("Skipped invalid data on line 2.\n", getNormalizedOutput());
+    }
+
     private String getNormalizedOutput() {
         return output.toString().replace(System.lineSeparator(), "\n");
     }

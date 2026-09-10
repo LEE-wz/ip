@@ -191,13 +191,21 @@ public class Ui {
         output.println(MESSAGE_DIVIDER + "\n");
     }
 
-    /** Displays the error shown when saving tasks fails. */
-    public void showSavingError() {
-        output.println("Unable to save tasks to data/remy.txt");
+    /**
+     * Displays an actionable error after saving tasks fails.
+     *
+     * @param message description of the save failure and suggested recovery
+     */
+    public void showSavingError(String message) {
+        output.println(message);
     }
 
-    /** Displays the error shown when loading tasks fails. */
-    public void showLoadingError() {
-        output.println("Unable to load saved tasks from data/remy.txt");
+    /**
+     * Displays a warning produced while loading saved tasks.
+     *
+     * @param message description of the load problem and its effect
+     */
+    public void showLoadingWarning(String message) {
+        output.println(message);
     }
 }

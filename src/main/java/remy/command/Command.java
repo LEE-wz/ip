@@ -1,8 +1,7 @@
 package remy.command;
 
-import java.io.IOException;
-
 import remy.storage.Storage;
+import remy.storage.StorageException;
 import remy.task.TaskList;
 import remy.ui.Ui;
 
@@ -41,8 +40,8 @@ public abstract class Command {
     protected void saveTasks(TaskList tasks, Ui ui, Storage storage) {
         try {
             storage.save(tasks);
-        } catch (IOException | SecurityException e) {
-            ui.showSavingError();
+        } catch (StorageException e) {
+            ui.showSavingError(e.getMessage());
         }
     }
 }
