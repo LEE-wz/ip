@@ -1,13 +1,18 @@
 package remy.storage;
 
 import java.io.IOException;
+import java.nio.charset.MalformedInputException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import remy.parser.DateParser;
@@ -60,51 +65,139 @@ public class Storage {
      * Saves tasks to the task file using an atomic replacement when supported.
      *
      * @param tasks tasks to save
-     * @throws IOException if the task file cannot be written
+     * @throws StorageException if the task file cannot be written
      */
-    public void save(TaskList tasks) throws IOException {
+    public void save(TaskList tasks) throws StorageException {
+        assert tasks != null : "Task list to save must not be null";
+
         Path temporaryFile = null;
         try {
-            Path parent = taskFile.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
+            Path absoluteTaskFile = taskFile.toAbsolutePath();
+            Path parent = absoluteTaskFile.getParent();
+            assert parent != null : "Absolute task-file path must have a parent";
+
+            Files.createDirectories(parent);
 
             String taskData = tasks.getTasks().stream()
                     .map(Task::toString)
                     .collect(Collectors.joining(System.lineSeparator()));
 
             temporaryFile = Files.createTempFile(parent, "remy-", ".tmp");
-            Files.writeString(temporaryFile, taskData);
+            Files.writeString(temporaryFile, taskData, StandardCharsets.UTF_8);
 
             try {
-                Files.move(temporaryFile, taskFile, StandardCopyOption.ATOMIC_MOVE,
+                Files.move(temporaryFile, absoluteTaskFile, StandardCopyOption.ATOMIC_MOVE,
                         StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                Files.move(temporaryFile, taskFile, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporaryFile, absoluteTaskFile, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException | SecurityException e) {
             deleteTemporaryFile(temporaryFile);
-            throw e;
+            throw createSaveException(e);
         }
     }
 
     /**
      * Loads valid tasks from the task file.
      *
-     * @return the tasks loaded from the file, or an empty task list when the file does not exist
-     * @throws IOException if the task file cannot be read
+     * @return recovered tasks, or an empty task list when the file does not exist
+     * @throws StorageException if the task file cannot be read
      */
-    public TaskList load() throws IOException {
-        if (!Files.exists(taskFile)) {
-            return new TaskList();
-        }
+    public TaskList load() throws StorageException {
+        return loadWithRecoveryDetails().getTasks();
+    }
 
-        List<Task> loadedTasks = Files.readAllLines(taskFile).stream()
-                .map(this::parseTask)
-                .filter(Objects::nonNull)
-                .toList();
-        return new TaskList(loadedTasks);
+    /**
+     * Loads valid tasks from the task file and identifies lines containing invalid data.
+     *
+     * @return recovered tasks and invalid line numbers, or an empty result when the file does not exist
+     * @throws StorageException if the task file cannot be read
+     */
+    public StorageLoadResult loadWithRecoveryDetails() throws StorageException {
+        try {
+            if (Files.notExists(taskFile)) {
+                return createEmptyLoadResult();
+            }
+            if (Files.isDirectory(taskFile)) {
+                throw new StorageException(
+                        "Unable to load tasks: \"" + taskFile + "\" is a directory, not a file.", null);
+            }
+            if (!Files.isReadable(taskFile)) {
+                throw new AccessDeniedException(taskFile.toString());
+            }
+
+            List<String> lines = Files.readAllLines(taskFile, StandardCharsets.UTF_8);
+            List<Task> loadedTasks = new ArrayList<>();
+            List<Integer> invalidLineNumbers = new ArrayList<>();
+            for (int index = 0; index < lines.size(); index++) {
+                Task task = parseTask(lines.get(index));
+                if (task == null) {
+                    invalidLineNumbers.add(index + 1);
+                } else {
+                    loadedTasks.add(task);
+                }
+            }
+            return new StorageLoadResult(new TaskList(loadedTasks), invalidLineNumbers);
+        } catch (NoSuchFileException e) {
+            // The file may be removed after the existence check; treat that race as a first run.
+            return createEmptyLoadResult();
+        } catch (StorageException e) {
+            throw e;
+        } catch (IOException | SecurityException e) {
+            throw createLoadException(e);
+        }
+    }
+
+    /**
+     * Returns the configured task-file path for user-facing storage messages.
+     *
+     * @return configured task-file path
+     */
+    public String getTaskFilePath() {
+        return taskFile.toString();
+    }
+
+    /** Returns an empty task-file load result. */
+    private StorageLoadResult createEmptyLoadResult() {
+        return new StorageLoadResult(new TaskList(), List.of());
+    }
+
+    /**
+     * Creates an actionable exception for a task-file read failure.
+     *
+     * @param cause failure reported by the environment
+     * @return storage exception containing a user-facing explanation
+     */
+    private StorageException createLoadException(Throwable cause) {
+        String message;
+        if (cause instanceof AccessDeniedException) {
+            message = "Unable to load tasks from \"" + taskFile
+                    + "\": access was denied. Check that Remy has permission to read the file.";
+        } else if (cause instanceof MalformedInputException) {
+            message = "Unable to load tasks from \"" + taskFile
+                    + "\": the file is not valid UTF-8 text.";
+        } else {
+            message = "Unable to load tasks from \"" + taskFile
+                    + "\". Check that the path is a readable task file.";
+        }
+        return new StorageException(message, cause);
+    }
+
+    /**
+     * Creates an actionable exception for a task-file write failure.
+     *
+     * @param cause failure reported by the environment
+     * @return storage exception containing a user-facing explanation
+     */
+    private StorageException createSaveException(Throwable cause) {
+        String message = "Unable to save tasks to \"" + taskFile + "\". ";
+        if (cause instanceof AccessDeniedException) {
+            message += "Access was denied; check that Remy has permission to write to the file and its folder. ";
+        } else {
+            message += "Check that the path is writable and its parent is a folder. ";
+        }
+        message += "Your changes are kept only for this session.";
+        return new StorageException(message, cause);
     }
 
     /**
