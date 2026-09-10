@@ -35,6 +35,15 @@ Sorting uses each deadline's due endpoint and each event's start endpoint. Todos
 Ascending order is used when `/order` is omitted. Sorting changes the saved task order and task numbers, but it is not
 applied automatically to tasks added later.
 
+## Task file recovery
+
+Remy stores tasks as UTF-8 text in `data/remy.txt`. A missing task file is treated as a first run and is created when a
+task-changing command is next saved. If individual lines contain invalid task data, Remy loads the valid lines and
+reports the invalid line numbers; those invalid lines are removed on the next successful save.
+
+If the configured path cannot be read or written, Remy reports the affected path and a likely remedy instead of
+crashing. Changes that cannot be saved remain available in the current session but will not survive a restart.
+
 ## Setting up in Intellij
 
 Prerequisites: JDK 25, update Intellij to the most recent version.

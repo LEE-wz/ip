@@ -102,6 +102,42 @@ the JavaFX interaction and user-visible output.
 3. Verify the saving-error message is shown before the current in-memory sorted list.
 4. Verify the in-memory order remains sorted for the session.
 
+## Task file recovery
+
+### Scope
+
+This plan verifies that environmental storage problems do not crash Remy or silently hide lost persistence.
+Automated JUnit tests cover missing files, invalid records, non-UTF-8 content, directory/file mismatches, and failed
+writes. The manual checks focus on the recovery guidance shown in the JavaFX interface.
+
+### Manual test cases
+
+#### STORAGE-01: Missing task file
+
+1. Start Remy after moving `data/remy.txt` to a temporary backup location.
+2. Verify Remy starts with an empty task list and no error message.
+3. Add a task and verify Remy creates a new `data/remy.txt` containing that task.
+
+#### STORAGE-02: Invalid task data
+
+1. Add an invalid line between two valid task records in `data/remy.txt`.
+2. Start Remy and verify the greeting identifies the invalid line number.
+3. Enter `list` and verify both valid tasks were recovered.
+4. Change a task and verify the invalid line is removed from the saved file.
+
+#### STORAGE-03: Read access denied
+
+1. Remove read permission from a disposable task file and start Remy with that path.
+2. Verify the greeting identifies the path, explains that access was denied, and states that an empty list was used.
+3. Restore the original file permission after the test.
+
+#### STORAGE-04: Write failure
+
+1. Start Remy with a disposable task-file path whose parent is not writable.
+2. Enter a valid task-changing command.
+3. Verify Remy identifies the path, suggests checking permissions, and says the change is session-only.
+4. Enter `list` and verify the in-memory change is still present.
+
 ## Profile picture display
 
 ### Scope
