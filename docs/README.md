@@ -6,6 +6,12 @@
 
 // Product intro goes here
 
+## Profile pictures
+
+Each user message and Remy response is shown beside an equally sized square profile picture with rounded corners.
+Non-square profile pictures are cropped evenly from their longer sides, keeping the center visible without stretching
+the image. The initial Remy greeting uses the same profile picture styling as later messages.
+
 ## Adding deadlines
 
 // Describe the action and its outcome.
