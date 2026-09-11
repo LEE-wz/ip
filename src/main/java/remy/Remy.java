@@ -124,7 +124,7 @@ public class Remy {
                     throw new RemyException("This chat has ended. Restart Remy to begin a new session.");
                 }
 
-                executeCommand(input.strip(), responseUi);
+                executeCommand(input, responseUi);
                 if (hasExited) {
                     responseUi.showFarewell();
                 }

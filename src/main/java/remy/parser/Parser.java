@@ -2,6 +2,7 @@ package remy.parser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 import remy.command.AddCommand;
 import remy.command.Command;
@@ -39,6 +40,20 @@ public class Parser {
     private static final String INVALID_SORT_MESSAGE = "Invalid sort command.\n"
             + "Use: sort /by date [/order asc|desc]\n"
             + "Example: sort /by date /order asc";
+
+    /** Guidance shown when command whitespace does not follow the supported syntax. */
+    private static final String INVALID_SPACING_MESSAGE = "Invalid command spacing.\n"
+            + "Use one space between command parts and remove leading or trailing spaces.";
+
+    /** Guidance shown when a deadline command has misplaced or repeated parameters. */
+    private static final String INVALID_DEADLINE_COMMAND_MESSAGE = "Invalid deadline command.\n"
+            + "Use: deadline DESCRIPTION /by DATE\n"
+            + "Specify /by exactly once.";
+
+    /** Guidance shown when an event command has misplaced, unknown, or repeated parameters. */
+    private static final String INVALID_EVENT_COMMAND_MESSAGE = "Invalid event command.\n"
+            + "Use: event DESCRIPTION /from START /to END\n"
+            + "Specify /from and /to exactly once and in that order.";
 
     /** Error shown when a deadline endpoint is not a real supported date. */
     private static final String INVALID_DEADLINE_DATE_MESSAGE =
@@ -86,10 +101,17 @@ public class Parser {
      * @throws RemyException if the message is unknown or its arguments are invalid
      */
     public Command parse(String message) {
+        validateCommandSpacing(message);
         CommandType commandType = parseCommandType(message);
         return switch (commandType) {
-            case BYE -> new ExitCommand();
-            case LIST -> new ListCommand();
+            case BYE -> {
+                validateNoArguments(message, BYE_COMMAND);
+                yield new ExitCommand();
+            }
+            case LIST -> {
+                validateNoArguments(message, LIST_COMMAND);
+                yield new ListCommand();
+            }
             case FIND -> new FindCommand(parseFindKeyword(message));
             case SORT -> new SortCommand(parseSortOrder(message));
             case DELETE -> new DeleteCommand(parseTaskIndex(message, commandType));
@@ -111,40 +133,85 @@ public class Parser {
             return CommandType.UNKNOWN;
         }
 
-        if (message.equals(BYE_COMMAND)) {
+        if (startsWithCommandKeyword(message, BYE_COMMAND)) {
             return CommandType.BYE;
         }
-        if (message.equals(LIST_COMMAND)) {
+        if (startsWithCommandKeyword(message, LIST_COMMAND)) {
             return CommandType.LIST;
         }
-        if (message.equals(FIND_COMMAND) || (message.startsWith(FIND_COMMAND)
-                && Character.isWhitespace(message.charAt(FIND_COMMAND.length())))) {
+        if (startsWithCommandKeyword(message, FIND_COMMAND)) {
             return CommandType.FIND;
         }
-        if (message.equals(SORT_COMMAND) || (message.startsWith(SORT_COMMAND)
-                && Character.isWhitespace(message.charAt(SORT_COMMAND.length())))) {
+        if (startsWithCommandKeyword(message, SORT_COMMAND)) {
             return CommandType.SORT;
         }
-        if (message.startsWith(DELETE_COMMAND)) {
+        if (startsWithCommandKeyword(message, DELETE_COMMAND)) {
             return CommandType.DELETE;
         }
-        if (message.startsWith(MARK_COMMAND)) {
+        if (startsWithCommandKeyword(message, MARK_COMMAND)) {
             return CommandType.MARK;
         }
-        if (message.startsWith(UNMARK_COMMAND)) {
+        if (startsWithCommandKeyword(message, UNMARK_COMMAND)) {
             return CommandType.UNMARK;
         }
-        if (message.startsWith(TODO_COMMAND)) {
+        if (startsWithCommandKeyword(message, TODO_COMMAND)) {
             return CommandType.TODO;
         }
-        if (message.startsWith(DEADLINE_COMMAND)) {
+        if (startsWithCommandKeyword(message, DEADLINE_COMMAND)) {
             return CommandType.DEADLINE;
         }
-        if (message.startsWith(EVENT_COMMAND)) {
+        if (startsWithCommandKeyword(message, EVENT_COMMAND)) {
             return CommandType.EVENT;
         }
 
         return CommandType.UNKNOWN;
+    }
+
+    /**
+     * Returns whether a message starts with the given complete command keyword.
+     *
+     * @param message user message to inspect
+     * @param commandKeyword command keyword to match
+     * @return true when the message is the keyword or starts with the keyword followed by a space
+     */
+    private boolean startsWithCommandKeyword(String message, String commandKeyword) {
+        return message.equals(commandKeyword) || message.startsWith(commandKeyword + " ");
+    }
+
+    /**
+     * Rejects ambiguous whitespace and control characters in a command.
+     *
+     * @param message user message to inspect
+     * @throws RemyException if the message contains unsupported spacing or control characters
+     */
+    private void validateCommandSpacing(String message) {
+        if (message == null) {
+            return;
+        }
+
+        boolean hasOuterSpaces = message.startsWith(" ") || message.endsWith(" ");
+        boolean hasRepeatedSpaces = message.contains("  ");
+        boolean hasUnsupportedCharacter = message.codePoints().anyMatch(character ->
+                Character.isISOControl(character)
+                        || (character != ' '
+                        && (Character.isWhitespace(character) || Character.isSpaceChar(character))));
+        if (hasOuterSpaces || hasRepeatedSpaces || hasUnsupportedCharacter) {
+            throw new RemyException(INVALID_SPACING_MESSAGE);
+        }
+    }
+
+    /**
+     * Rejects arguments supplied to a command that accepts none.
+     *
+     * @param message user message to inspect
+     * @param commandKeyword command keyword that must appear alone
+     * @throws RemyException if text follows the command keyword
+     */
+    private void validateNoArguments(String message, String commandKeyword) {
+        if (!message.equals(commandKeyword)) {
+            throw new RemyException("The " + commandKeyword + " command does not accept parameters.\n"
+                    + "Use: " + commandKeyword);
+        }
     }
 
     /**
@@ -229,12 +296,16 @@ public class Parser {
      */
     private int parseTaskIndex(String message, String commandKeyword, String missingIndexMessage,
             String invalidIndexMessage) {
-        if (message.strip().length() == commandKeyword.length()) {
+        if (message.length() == commandKeyword.length()) {
             throw new RemyException(missingIndexMessage);
         }
 
+        String index = message.substring(commandKeyword.length() + 1);
+        if (!index.matches("[0-9]+")) {
+            throw new RemyException(invalidIndexMessage);
+        }
+
         try {
-            String index = message.substring(commandKeyword.length()).strip();
             return Integer.parseInt(index);
         } catch (NumberFormatException e) {
             throw new RemyException(invalidIndexMessage);
@@ -269,11 +340,11 @@ public class Parser {
      * @return a todo task
      */
     private Todo parseTodo(String message) {
-        if (message.strip().length() == TODO_COMMAND.length()) {
+        if (message.length() == TODO_COMMAND.length()) {
             throw RemyException.createForMissingTodoDescription();
         }
 
-        String description = message.substring(TODO_COMMAND.length()).strip();
+        String description = message.substring(TODO_COMMAND.length() + 1);
         return new Todo(description);
     }
 
@@ -284,17 +355,20 @@ public class Parser {
      * @return a deadline task
      */
     private Deadline parseDeadline(String message) {
-        if (message.length() == DEADLINE_COMMAND.length()) {
-            throw RemyException.createForMissingDeadlineDetails(false, false);
+        String[] commandTokens = message.split(" ");
+        int delimiterCount = countToken(commandTokens, DEADLINE_DELIMITER);
+        if (delimiterCount > 1 || hasUnexpectedParameter(commandTokens, DEADLINE_DELIMITER)) {
+            throw new RemyException(INVALID_DEADLINE_COMMAND_MESSAGE);
         }
 
-        String[] messageSplit = message.split(DEADLINE_DELIMITER, 0);
-        if (messageSplit.length == 1) {
-            throw RemyException.createForMissingDeadlineDetails(true, false);
+        int delimiterIndex = findTokenIndex(commandTokens, DEADLINE_DELIMITER);
+        if (delimiterIndex == -1) {
+            boolean hasDescription = commandTokens.length > 1;
+            throw RemyException.createForMissingDeadlineDetails(hasDescription, false);
         }
 
-        String description = messageSplit[0].substring(DEADLINE_COMMAND.length()).strip();
-        String deadline = messageSplit[1].strip();
+        String description = joinTokens(commandTokens, 1, delimiterIndex);
+        String deadline = joinTokens(commandTokens, delimiterIndex + 1, commandTokens.length);
         boolean isMissingDescription = description.isEmpty();
         boolean isMissingDeadline = deadline.isEmpty();
         if (isMissingDescription || isMissingDeadline) {
@@ -334,26 +408,31 @@ public class Parser {
      * @return an event task
      */
     private Event parseEvent(String message) {
-        if (message.length() == EVENT_COMMAND.length()) {
-            throw RemyException.createForMissingEventDetails(false, false, false);
+        String[] commandTokens = message.split(" ");
+        int startDelimiterCount = countToken(commandTokens, EVENT_START_DELIMITER);
+        int endDelimiterCount = countToken(commandTokens, EVENT_END_DELIMITER);
+        boolean hasRepeatedParameter = startDelimiterCount > 1 || endDelimiterCount > 1;
+        if (hasRepeatedParameter || hasUnexpectedParameter(
+                commandTokens, EVENT_START_DELIMITER, EVENT_END_DELIMITER)) {
+            throw new RemyException(INVALID_EVENT_COMMAND_MESSAGE);
         }
 
-        String eventDelimiterPattern = EVENT_START_DELIMITER + "|" + EVENT_END_DELIMITER;
-        String[] messageSplit = message.split(eventDelimiterPattern, 0);
-        if (messageSplit.length == 1) {
-            throw RemyException.createForMissingEventDetails(true, false, false);
+        int startDelimiterIndex = findTokenIndex(commandTokens, EVENT_START_DELIMITER);
+        int endDelimiterIndex = findTokenIndex(commandTokens, EVENT_END_DELIMITER);
+        if (startDelimiterIndex == -1 || endDelimiterIndex == -1) {
+            int descriptionEndIndex = findFirstParameterIndex(commandTokens);
+            boolean hasDescription = descriptionEndIndex > 1;
+            throw RemyException.createForMissingEventDetails(
+                    hasDescription, startDelimiterIndex != -1, endDelimiterIndex != -1);
+        }
+        if (startDelimiterIndex > endDelimiterIndex) {
+            throw new RemyException(INVALID_EVENT_COMMAND_MESSAGE);
         }
 
-        String description = messageSplit[0].substring(EVENT_COMMAND.length()).strip();
+        String description = joinTokens(commandTokens, 1, startDelimiterIndex);
+        String start = joinTokens(commandTokens, startDelimiterIndex + 1, endDelimiterIndex);
+        String end = joinTokens(commandTokens, endDelimiterIndex + 1, commandTokens.length);
         boolean isMissingDescription = description.isEmpty();
-        if (messageSplit.length == 2) {
-            boolean hasFrom = message.contains(EVENT_START_DELIMITER);
-            boolean hasTo = message.contains(EVENT_END_DELIMITER);
-            throw RemyException.createForMissingEventDetails(!isMissingDescription, hasFrom, hasTo);
-        }
-
-        String start = messageSplit[1].strip();
-        String end = messageSplit[2].strip();
         boolean isMissingStart = start.isEmpty();
         boolean isMissingEnd = end.isEmpty();
         if (isMissingDescription || isMissingStart || isMissingEnd) {
@@ -362,6 +441,84 @@ public class Parser {
         }
 
         return createEvent(description, start, end);
+    }
+
+    /**
+     * Counts exact occurrences of a parameter token.
+     *
+     * @param commandTokens command split on its single spaces
+     * @param parameter parameter token to count
+     * @return number of exact parameter occurrences
+     */
+    private int countToken(String[] commandTokens, String parameter) {
+        int count = 0;
+        for (String token : commandTokens) {
+            if (token.equals(parameter)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Returns the index of an exact parameter token.
+     *
+     * @param commandTokens command split on its single spaces
+     * @param parameter parameter token to find
+     * @return token index, or -1 when the parameter is absent
+     */
+    private int findTokenIndex(String[] commandTokens, String parameter) {
+        for (int index = 0; index < commandTokens.length; index++) {
+            if (commandTokens[index].equals(parameter)) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the index of the first parameter-like token.
+     *
+     * @param commandTokens command split on its single spaces
+     * @return first parameter index, or the token count when no parameter exists
+     */
+    private int findFirstParameterIndex(String[] commandTokens) {
+        for (int index = 1; index < commandTokens.length; index++) {
+            if (commandTokens[index].startsWith("/")) {
+                return index;
+            }
+        }
+        return commandTokens.length;
+    }
+
+    /**
+     * Returns whether a command contains an unrecognized parameter-like token.
+     *
+     * @param commandTokens command split on its single spaces
+     * @param allowedParameters parameters allowed by the command
+     * @return true when a slash-prefixed token is not an allowed parameter
+     */
+    private boolean hasUnexpectedParameter(String[] commandTokens, String... allowedParameters) {
+        for (int index = 1; index < commandTokens.length; index++) {
+            String token = commandTokens[index];
+            boolean isAllowed = Arrays.asList(allowedParameters).contains(token);
+            if (token.startsWith("/") && !isAllowed) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Joins a range of command tokens using one space.
+     *
+     * @param commandTokens command split on its single spaces
+     * @param startIndex inclusive starting index
+     * @param endIndex exclusive ending index
+     * @return joined token range, or an empty string for an empty range
+     */
+    private String joinTokens(String[] commandTokens, int startIndex, int endIndex) {
+        return String.join(" ", Arrays.copyOfRange(commandTokens, startIndex, endIndex));
     }
 
     /**

@@ -255,6 +255,24 @@ class RemyTest {
         assertFalse(Files.exists(temporaryDirectory.resolve("tasks.txt")));
     }
 
+    @Test
+    void getResponse_commandFormatErrors_actionableErrorsReturnedAndTasksNotAdded() {
+        Remy remy = createRemy();
+
+        String leadingSpaceResponse = remy.getResponse(" todo prepare ingredients");
+        String repeatedSpaceResponse = remy.getResponse("todo  prepare ingredients");
+        String repeatedParameterResponse = remy.getResponse(
+                "deadline submit report /by 24/9/2026 /by 25/9/2026");
+        String specialIndexResponse = remy.getResponse("mark #1");
+        String listResponse = remy.getResponse("list");
+
+        assertTrue(leadingSpaceResponse.contains("Invalid command spacing"));
+        assertTrue(repeatedSpaceResponse.contains("Invalid command spacing"));
+        assertTrue(repeatedParameterResponse.contains("Specify /by exactly once"));
+        assertTrue(specialIndexResponse.contains("integer"));
+        assertTrue(listResponse.contains("There are no tasks"));
+    }
+
     /** Returns a Remy instance with isolated test storage. */
     private Remy createRemy() {
         return new Remy(temporaryDirectory.resolve("tasks.txt").toString());

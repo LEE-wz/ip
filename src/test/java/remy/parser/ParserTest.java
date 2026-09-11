@@ -103,7 +103,7 @@ class ParserTest {
         execute(defaultSortCommand, tasks);
         assertEquals(List.of(earlierTask, laterTask, todo), tasks.getTasks());
 
-        Command descendingSortCommand = parser.parse("sort   /by   date   /order   desc");
+        Command descendingSortCommand = parser.parse("sort /by date /order desc");
         assertInstanceOf(SortCommand.class, descendingSortCommand);
         execute(descendingSortCommand, tasks);
         assertEquals(List.of(laterTask, earlierTask, todo), tasks.getTasks());
@@ -150,6 +150,72 @@ class ParserTest {
                 parser.parse("sorter /by date"));
 
         assertTrue(exception.getMessage().contains("no clue what you're talking about"));
+    }
+
+    @Test
+    void parse_invalidCommandSpacing_actionableErrorThrown() {
+        Parser parser = new Parser();
+        List<String> invalidCommands = List.of(
+                " todo Read book",
+                "todo Read book ",
+                "todo  Read book",
+                "todo\tRead book",
+                "deadline Submit report  /by 24/9/2026");
+
+        for (String invalidCommand : invalidCommands) {
+            RemyException exception = assertThrows(RemyException.class, () -> parser.parse(invalidCommand));
+            assertTrue(exception.getMessage().contains("Invalid command spacing"));
+            assertTrue(exception.getMessage().contains("one space"));
+        }
+    }
+
+    @Test
+    void parse_repeatedOrMisorderedParameters_formatErrorThrown() {
+        Parser parser = new Parser();
+        List<String> invalidDeadlineCommands = List.of(
+                "deadline Submit report /by 24/9/2026 /by 25/9/2026",
+                "deadline Submit report /when 24/9/2026");
+        List<String> invalidEventCommands = List.of(
+                "event Conference /from 24/9/2026 /from 25/9/2026 /to 26/9/2026",
+                "event Conference /from 24/9/2026 /to 25/9/2026 /to 26/9/2026",
+                "event Conference /to 25/9/2026 /from 24/9/2026",
+                "event Conference /from 24/9/2026 /until 25/9/2026");
+
+        for (String invalidCommand : invalidDeadlineCommands) {
+            RemyException exception = assertThrows(RemyException.class, () -> parser.parse(invalidCommand));
+            assertTrue(exception.getMessage().contains("Specify /by exactly once"));
+        }
+        for (String invalidCommand : invalidEventCommands) {
+            RemyException exception = assertThrows(RemyException.class, () -> parser.parse(invalidCommand));
+            assertTrue(exception.getMessage().contains("exactly once and in that order"));
+        }
+    }
+
+    @Test
+    void parse_unexpectedArgumentsAndSpecialIndexCharacters_formatErrorThrown() {
+        Parser parser = new Parser();
+        List<String> invalidIndexCommands = List.of("mark +1", "unmark 1!", "delete #1", "delete 1.0");
+
+        RemyException listException = assertThrows(RemyException.class, () -> parser.parse("list extra"));
+        RemyException byeException = assertThrows(RemyException.class, () -> parser.parse("bye now"));
+        assertTrue(listException.getMessage().contains("does not accept parameters"));
+        assertTrue(byeException.getMessage().contains("does not accept parameters"));
+
+        for (String invalidCommand : invalidIndexCommands) {
+            assertThrows(RemyException.class, () -> parser.parse(invalidCommand));
+        }
+        assertThrows(RemyException.class, () -> parser.parse("todoing Read book"));
+        assertThrows(RemyException.class, () -> parser.parse("marking 1"));
+    }
+
+    @Test
+    void parse_taskDescriptionContainsPunctuation_taskAdded() {
+        Parser parser = new Parser();
+        TaskList tasks = new TaskList();
+
+        execute(parser.parse("todo Buy milk @ store #2!"), tasks);
+
+        assertEquals("[T][ ] Buy milk @ store #2!", tasks.get(0).toString());
     }
 
     /**
