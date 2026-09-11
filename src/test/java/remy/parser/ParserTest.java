@@ -160,6 +160,7 @@ class ParserTest {
                 "todo Read book ",
                 "todo  Read book",
                 "todo\tRead book",
+                "todo\u00a0Read book",
                 "deadline Submit report  /by 24/9/2026");
 
         for (String invalidCommand : invalidCommands) {
@@ -246,6 +247,7 @@ class ParserTest {
         assertThrows(RemyException.class, () -> parser.parse(null));
         assertThrows(RemyException.class, () -> parser.parse("deadline submit /by tomorrow"));
         assertThrows(RemyException.class, () -> parser.parse("mark one"));
+        assertThrows(RemyException.class, () -> parser.parse("mark 999999999999999999999999"));
     }
 
     @Test
@@ -260,6 +262,19 @@ class ParserTest {
 
         assertTrue(deadlineException.getMessage().contains("deadline date is invalid"));
         assertTrue(eventException.getMessage().contains("event dates are invalid"));
+    }
+
+    @Test
+    void parse_eventEndpointsUseDifferentDateRepresentations_actionableErrorThrown() {
+        Parser parser = new Parser();
+        List<String> invalidCommands = List.of(
+                "event Conference /from 24/9/2026 1500 /to 25/9/2026",
+                "event Conference /from 24/9/2026 /to 25/9/2026 1500");
+
+        for (String invalidCommand : invalidCommands) {
+            RemyException exception = assertThrows(RemyException.class, () -> parser.parse(invalidCommand));
+            assertTrue(exception.getMessage().contains("same supported format"));
+        }
     }
 
     @Test
@@ -302,6 +317,41 @@ class ParserTest {
         assertThrows(RemyException.class, () -> parser.parse("mark"));
         assertThrows(RemyException.class, () -> parser.parse("unmark"));
         assertThrows(RemyException.class, () -> parser.parse("delete"));
+    }
+
+    @Test
+    void parse_taskCommandsWithIndividualMissingDetails_missingDetailsIdentified() {
+        Parser parser = new Parser();
+
+        RemyException deadlineDescriptionException = assertThrows(RemyException.class, () ->
+                parser.parse("deadline /by 24/9/2026"));
+        RemyException deadlineDateException = assertThrows(RemyException.class, () ->
+                parser.parse("deadline Submit report /by"));
+        RemyException deadlineParameterException = assertThrows(RemyException.class, () ->
+                parser.parse("deadline Submit report"));
+        RemyException eventDescriptionException = assertThrows(RemyException.class, () ->
+                parser.parse("event /from 24/9/2026 /to 25/9/2026"));
+        RemyException eventStartException = assertThrows(RemyException.class, () ->
+                parser.parse("event Conference /from /to 25/9/2026"));
+        RemyException eventEndException = assertThrows(RemyException.class, () ->
+                parser.parse("event Conference /from 24/9/2026 /to"));
+        RemyException eventFromParameterException = assertThrows(RemyException.class, () ->
+                parser.parse("event Conference /to 25/9/2026"));
+        RemyException eventToParameterException = assertThrows(RemyException.class, () ->
+                parser.parse("event Conference /from 24/9/2026"));
+        RemyException eventParametersException = assertThrows(RemyException.class, () ->
+                parser.parse("event Conference"));
+
+        assertTrue(deadlineDescriptionException.getMessage().contains("description"));
+        assertTrue(deadlineDateException.getMessage().contains("DEADLINE"));
+        assertTrue(deadlineParameterException.getMessage().contains("DEADLINE"));
+        assertTrue(eventDescriptionException.getMessage().contains("description"));
+        assertTrue(eventStartException.getMessage().contains("starts"));
+        assertTrue(eventEndException.getMessage().contains("ends"));
+        assertTrue(eventFromParameterException.getMessage().contains("starts"));
+        assertTrue(eventToParameterException.getMessage().contains("ends"));
+        assertTrue(eventParametersException.getMessage().contains("starts"));
+        assertTrue(eventParametersException.getMessage().contains("ends"));
     }
 
     /** Executes a parsed command using isolated persistence for the test. */
