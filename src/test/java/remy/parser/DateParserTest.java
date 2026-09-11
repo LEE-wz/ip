@@ -35,6 +35,8 @@ class DateParserTest {
     @Test
     void parseDateTime_invalidOrDateOnlyInput_nullReturned() {
         assertNull(DateParser.parseDateTime("23/8/2026"));
+        assertNull(DateParser.parseDateTime("30/2/2026 1430"));
+        assertNull(DateParser.parseDateTime("23/8/2026 2400"));
         assertNull(DateParser.parseDateTime("not a date"));
     }
 
@@ -47,6 +49,7 @@ class DateParserTest {
         assertEquals(LocalDate.of(2026, 8, 23), DateParser.parseDate("23/8/2026"));
         assertEquals(LocalDate.of(2026, 8, 23), DateParser.parseDate("23 Aug 2026"));
         assertEquals(LocalDate.of(2026, 8, 23), DateParser.parseDate("2026-08-23"));
+        assertEquals(LocalDate.of(2024, 2, 29), DateParser.parseDate("29/2/2024"));
     }
 
     /**
@@ -55,6 +58,9 @@ class DateParserTest {
     @Test
     void parseDate_invalidOrDateTimeInput_nullReturned() {
         assertNull(DateParser.parseDate("23/8/2026 1430"));
+        assertNull(DateParser.parseDate("30/2/2026"));
+        assertNull(DateParser.parseDate("29/2/2025"));
+        assertNull(DateParser.parseDate("31 Apr 2026"));
         assertNull(DateParser.parseDate("not a date"));
     }
 }

@@ -1,5 +1,6 @@
 package remy.command;
 
+import remy.exception.RemyException;
 import remy.storage.Storage;
 import remy.task.Task;
 import remy.task.TaskList;
@@ -25,7 +26,9 @@ public class AddCommand extends Command {
 
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
-        tasks.add(task);
+        if (!tasks.add(task)) {
+            throw new RemyException("That task already exists in your list.");
+        }
         saveTasks(tasks, ui, storage);
         ui.showTaskAdded(task, tasks.size());
     }

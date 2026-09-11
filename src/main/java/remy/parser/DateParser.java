@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Parses dates and date-times written in the formats supported by Remy.
@@ -14,38 +16,49 @@ import java.util.List;
 public final class DateParser {
     /** Supported date-time input formats. */
     private static final List<DateTimeFormatter> DATE_TIME_FORMATTERS = List.of(
-            DateTimeFormatter.ofPattern("d/M/yyyy HHmm"),
-            DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HHmm"),
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("d-M-yyyy HHmm"),
-            DateTimeFormatter.ofPattern("d-M-yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm"),
-            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
-            DateTimeFormatter.ofPattern("yyyy-M-d HHmm"),
-            DateTimeFormatter.ofPattern("yyyy-M-d HH:mm"),
-            DateTimeFormatter.ofPattern("MMM dd yyyy HHmm"),
-            DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("dd MMM yyyy HHmm"),
-            DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"),
+            createStrictFormatter("d/M/uuuu HHmm"),
+            createStrictFormatter("d/M/uuuu HH:mm"),
+            createStrictFormatter("dd/MM/uuuu HHmm"),
+            createStrictFormatter("dd/MM/uuuu HH:mm"),
+            createStrictFormatter("d-M-uuuu HHmm"),
+            createStrictFormatter("d-M-uuuu HH:mm"),
+            createStrictFormatter("dd-MM-uuuu HHmm"),
+            createStrictFormatter("dd-MM-uuuu HH:mm"),
+            createStrictFormatter("uuuu-MM-dd HHmm"),
+            createStrictFormatter("uuuu-MM-dd HH:mm"),
+            createStrictFormatter("uuuu-M-d HHmm"),
+            createStrictFormatter("uuuu-M-d HH:mm"),
+            createStrictFormatter("MMM dd uuuu HHmm"),
+            createStrictFormatter("MMM dd uuuu HH:mm"),
+            createStrictFormatter("dd MMM uuuu HHmm"),
+            createStrictFormatter("dd MMM uuuu HH:mm"),
             DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
     /** Supported date input formats. */
     private static final List<DateTimeFormatter> DATE_FORMATTERS = List.of(
-            DateTimeFormatter.ofPattern("d/M/yyyy"),
-            DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-            DateTimeFormatter.ofPattern("d-M-yyyy"),
-            DateTimeFormatter.ofPattern("dd-MM-yyyy"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-            DateTimeFormatter.ofPattern("yyyy-M-d"),
-            DateTimeFormatter.ofPattern("MMM dd yyyy"),
-            DateTimeFormatter.ofPattern("dd MMM yyyy"),
+            createStrictFormatter("d/M/uuuu"),
+            createStrictFormatter("dd/MM/uuuu"),
+            createStrictFormatter("d-M-uuuu"),
+            createStrictFormatter("dd-MM-uuuu"),
+            createStrictFormatter("uuuu-MM-dd"),
+            createStrictFormatter("uuuu-M-d"),
+            createStrictFormatter("MMM dd uuuu"),
+            createStrictFormatter("dd MMM uuuu"),
             DateTimeFormatter.ISO_LOCAL_DATE);
 
     /** Prevents instantiation of this utility class. */
     private DateParser() {
+    }
+
+    /**
+     * Creates a locale-stable formatter that rejects impossible dates and times.
+     *
+     * @param pattern date or date-time pattern to use
+     * @return strict English-language formatter
+     */
+    private static DateTimeFormatter createStrictFormatter(String pattern) {
+        return DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH)
+                .withResolverStyle(ResolverStyle.STRICT);
     }
 
     /**

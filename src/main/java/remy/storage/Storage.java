@@ -108,7 +108,7 @@ public class Storage {
     }
 
     /**
-     * Loads valid tasks from the task file and identifies lines containing invalid data.
+     * Loads valid unique tasks and identifies lines containing invalid or duplicate data.
      *
      * @return recovered tasks and invalid line numbers, or an empty result when the file does not exist
      * @throws StorageException if the task file cannot be read
@@ -127,17 +127,15 @@ public class Storage {
             }
 
             List<String> lines = Files.readAllLines(taskFile, StandardCharsets.UTF_8);
-            List<Task> loadedTasks = new ArrayList<>();
+            TaskList loadedTasks = new TaskList();
             List<Integer> invalidLineNumbers = new ArrayList<>();
             for (int index = 0; index < lines.size(); index++) {
                 Task task = parseTask(lines.get(index));
-                if (task == null) {
+                if (task == null || !loadedTasks.add(task)) {
                     invalidLineNumbers.add(index + 1);
-                } else {
-                    loadedTasks.add(task);
                 }
             }
-            return new StorageLoadResult(new TaskList(loadedTasks), invalidLineNumbers);
+            return new StorageLoadResult(loadedTasks, invalidLineNumbers);
         } catch (NoSuchFileException e) {
             // The file may be removed after the existence check; treat that race as a first run.
             return createEmptyLoadResult();
@@ -355,13 +353,13 @@ public class Storage {
     private Event parseSavedEvent(String description, String start, String end) {
         LocalDateTime startDateTime = DateParser.parseDateTime(start);
         LocalDateTime endDateTime = DateParser.parseDateTime(end);
-        if (startDateTime != null && endDateTime != null) {
+        if (startDateTime != null && endDateTime != null && startDateTime.isBefore(endDateTime)) {
             return new Event(description, startDateTime, endDateTime);
         }
 
         LocalDate startDate = DateParser.parseDate(start);
         LocalDate endDate = DateParser.parseDate(end);
-        if (startDate != null && endDate != null) {
+        if (startDate != null && endDate != null && startDate.isBefore(endDate)) {
             return new Event(description, startDate, endDate);
         }
         return null;

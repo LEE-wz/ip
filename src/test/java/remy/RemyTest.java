@@ -1,6 +1,7 @@
 package remy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -219,6 +220,39 @@ class RemyTest {
         assertTrue(response.indexOf("Unable to save tasks") < response.indexOf("marked this task as done"));
         assertTrue(response.contains("kept only for this session"));
         assertTrue(listResponse.contains("[T][X] prepare ingredients"));
+    }
+
+    @Test
+    void getResponse_duplicateTask_errorReturnedAndDuplicateNotSaved() throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Remy remy = new Remy(taskFile.toString());
+        remy.getResponse("deadline submit report /by 24/9/2026");
+
+        String duplicateResponse = remy.getResponse("deadline submit report /by 24/9/2026");
+
+        assertTrue(duplicateResponse.contains("already exists"));
+        assertEquals(1, Files.readAllLines(taskFile).size());
+    }
+
+    @Test
+    void getResponse_invalidDatesAndEventRanges_errorsReturnedAndTasksNotAdded() {
+        Remy remy = createRemy();
+
+        String deadlineResponse = remy.getResponse("deadline submit report /by 30/2/2026");
+        String nonExistentEventResponse = remy.getResponse(
+                "event conference /from 29/2/2025 /to 1/3/2025");
+        String equalRangeResponse = remy.getResponse(
+                "event conference /from 24/9/2026 1500 /to 24/9/2026 1500");
+        String reversedRangeResponse = remy.getResponse(
+                "event conference /from 24/9/2026 1600 /to 24/9/2026 1500");
+        String listResponse = remy.getResponse("list");
+
+        assertTrue(deadlineResponse.contains("deadline date is invalid"));
+        assertTrue(nonExistentEventResponse.contains("event dates are invalid"));
+        assertTrue(equalRangeResponse.contains("must start before it ends"));
+        assertTrue(reversedRangeResponse.contains("must start before it ends"));
+        assertTrue(listResponse.contains("There are no tasks"));
+        assertFalse(Files.exists(temporaryDirectory.resolve("tasks.txt")));
     }
 
     /** Returns a Remy instance with isolated test storage. */

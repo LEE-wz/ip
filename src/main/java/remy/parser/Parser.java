@@ -40,6 +40,17 @@ public class Parser {
             + "Use: sort /by date [/order asc|desc]\n"
             + "Example: sort /by date /order asc";
 
+    /** Error shown when a deadline endpoint is not a real supported date. */
+    private static final String INVALID_DEADLINE_DATE_MESSAGE =
+            "The deadline date is invalid. Use a real date in a supported format.";
+
+    /** Error shown when event endpoints are not real dates in the same supported format. */
+    private static final String INVALID_EVENT_DATE_MESSAGE =
+            "The event dates are invalid. Use real dates in the same supported format.";
+
+    /** Error shown when an event does not end after it starts. */
+    private static final String INVALID_EVENT_RANGE_MESSAGE = "An event must start before it ends.";
+
     /** Command keyword for deleting a task. */
     private static final String DELETE_COMMAND = "delete";
 
@@ -313,7 +324,7 @@ public class Parser {
             return new Deadline(description, deadlineDate);
         }
 
-        throw RemyException.createForMissingDeadlineDetails(true, false);
+        throw new RemyException(INVALID_DEADLINE_DATE_MESSAGE);
     }
 
     /**
@@ -368,12 +379,26 @@ public class Parser {
         LocalDate startDate = DateParser.parseDate(start);
         LocalDate endDate = DateParser.parseDate(end);
         if (startDateTime != null && endDateTime != null) {
+            validateEventOrder(startDateTime.isBefore(endDateTime));
             return new Event(description, startDateTime, endDateTime);
         }
         if (startDate != null && endDate != null) {
+            validateEventOrder(startDate.isBefore(endDate));
             return new Event(description, startDate, endDate);
         }
 
-        throw RemyException.createForMissingEventDetails(true, false, false);
+        throw new RemyException(INVALID_EVENT_DATE_MESSAGE);
+    }
+
+    /**
+     * Ensures that an event starts before it ends.
+     *
+     * @param isStartBeforeEnd whether the parsed start precedes the parsed end
+     * @throws RemyException if the event range is empty or reversed
+     */
+    private void validateEventOrder(boolean isStartBeforeEnd) {
+        if (!isStartBeforeEnd) {
+            throw new RemyException(INVALID_EVENT_RANGE_MESSAGE);
+        }
     }
 }

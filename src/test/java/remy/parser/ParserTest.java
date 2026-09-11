@@ -183,6 +183,49 @@ class ParserTest {
     }
 
     @Test
+    void parse_nonExistentDates_actionableErrorsThrown() {
+        Parser parser = new Parser();
+        String invalidDeadlineCommand = "deadline Submit report /by 30/2/2026";
+        String invalidEventCommand = "event Conference /from 29/2/2025 /to 1/3/2025";
+
+        RemyException deadlineException = assertThrows(RemyException.class, () ->
+                parser.parse(invalidDeadlineCommand));
+        RemyException eventException = assertThrows(RemyException.class, () -> parser.parse(invalidEventCommand));
+
+        assertTrue(deadlineException.getMessage().contains("deadline date is invalid"));
+        assertTrue(eventException.getMessage().contains("event dates are invalid"));
+    }
+
+    @Test
+    void parse_eventStartIsNotBeforeEnd_actionableErrorThrown() {
+        Parser parser = new Parser();
+        List<String> invalidCommands = List.of(
+                "event Conference /from 24/9/2026 /to 24/9/2026",
+                "event Conference /from 25/9/2026 /to 24/9/2026",
+                "event Conference /from 24/9/2026 1500 /to 24/9/2026 1500",
+                "event Conference /from 24/9/2026 1600 /to 24/9/2026 1500");
+
+        for (String invalidCommand : invalidCommands) {
+            RemyException exception = assertThrows(RemyException.class, () -> parser.parse(invalidCommand));
+            assertTrue(exception.getMessage().contains("must start before it ends"));
+        }
+    }
+
+    @Test
+    void execute_duplicateTask_errorThrownAndOriginalTaskRetained() {
+        Parser parser = new Parser();
+        TaskList tasks = new TaskList();
+        String duplicateCommand = "deadline Submit report /by 24/9/2026";
+        execute(parser.parse(duplicateCommand), tasks);
+
+        RemyException exception = assertThrows(RemyException.class, () ->
+                execute(parser.parse(duplicateCommand), tasks));
+
+        assertTrue(exception.getMessage().contains("already exists"));
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
     void parse_commandsWithoutRequiredArguments_remyExceptionThrown() {
         Parser parser = new Parser();
 

@@ -3,6 +3,8 @@ package remy.task;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -12,11 +14,11 @@ public class Deadline extends Task {
 
     /** Format used when displaying date-only deadlines. */
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd yyyy");
+            DateTimeFormatter.ofPattern("MMM dd uuuu", Locale.ENGLISH);
 
     /** Format used when displaying deadlines that include a time. */
     private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
+            DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm", Locale.ENGLISH);
 
     /** Date-only deadline, when the deadline has no time. */
     private final LocalDate byDate;
@@ -58,6 +60,22 @@ public class Deadline extends Task {
 
         this.byDate = byDate;
         this.byDateTime = byDateTime;
+    }
+
+    /**
+     * Returns whether another task is a deadline with the same description and endpoint.
+     *
+     * @param otherTask task to compare with
+     * @return true when both deadlines have the same identifying details
+     */
+    @Override
+    public boolean hasSameDetailsAs(Task otherTask) {
+        if (!(otherTask instanceof Deadline otherDeadline)) {
+            return false;
+        }
+        return super.hasSameDetailsAs(otherDeadline)
+                && Objects.equals(byDate, otherDeadline.byDate)
+                && Objects.equals(byDateTime, otherDeadline.byDateTime);
     }
 
     /**

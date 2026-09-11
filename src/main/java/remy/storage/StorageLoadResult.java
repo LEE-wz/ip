@@ -5,20 +5,20 @@ import java.util.List;
 import remy.task.TaskList;
 
 /**
- * Contains tasks recovered from a task file and the line numbers that could not be parsed.
+ * Contains tasks recovered from a task file and the line numbers rejected during loading.
  */
 public class StorageLoadResult {
     /** Tasks successfully recovered from the task file. */
     private final TaskList tasks;
 
-    /** One-based line numbers containing invalid task data. */
+    /** One-based line numbers containing invalid or duplicate task data. */
     private final List<Integer> invalidLineNumbers;
 
     /**
      * Creates a result for one task-file load attempt.
      *
      * @param tasks tasks successfully recovered from the file
-     * @param invalidLineNumbers one-based line numbers containing invalid task data
+     * @param invalidLineNumbers one-based line numbers containing invalid or duplicate task data
      */
     public StorageLoadResult(TaskList tasks, List<Integer> invalidLineNumbers) {
         assert tasks != null : "Loaded task list must not be null";
@@ -38,7 +38,7 @@ public class StorageLoadResult {
     }
 
     /**
-     * Returns the one-based line numbers containing invalid task data.
+     * Returns the one-based line numbers containing invalid or duplicate task data.
      *
      * @return unmodifiable invalid line-number list
      */
@@ -47,9 +47,9 @@ public class StorageLoadResult {
     }
 
     /**
-     * Returns whether any lines in the task file could not be parsed.
+     * Returns whether any lines in the task file were invalid or duplicated another task.
      *
-     * @return true when at least one line contains invalid task data
+     * @return true when at least one line contains invalid or duplicate task data
      */
     public boolean hasInvalidLines() {
         return !invalidLineNumbers.isEmpty();

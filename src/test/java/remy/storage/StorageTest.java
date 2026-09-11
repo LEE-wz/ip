@@ -117,6 +117,25 @@ class StorageTest {
     }
 
     @Test
+    void load_taskFileContainsInvalidValues_validTasksRecoveredAndInvalidLinesReported() throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(taskFile, String.join(System.lineSeparator(),
+                "[T][ ] Read book",
+                "[T][X] Read book",
+                "[D][ ] Impossible deadline (by: Feb 30 2026)",
+                "[E][ ] Reversed event (from: Sep 25 2026 to: Sep 24 2026)",
+                "[E][ ] Empty event (from: Sep 24 2026 15:00 to: Sep 24 2026 15:00)",
+                "[D][ ] Valid leap day (by: Feb 29 2024)"));
+        Storage storage = new Storage(taskFile.toString());
+
+        StorageLoadResult loadResult = storage.loadWithRecoveryDetails();
+
+        assertEquals(List.of("[T][ ] Read book", "[D][ ] Valid leap day (by: Feb 29 2024)"),
+                loadResult.getTasks().getTasks().stream().map(Task::toString).toList());
+        assertEquals(List.of(2, 3, 4, 5), loadResult.getInvalidLineNumbers());
+    }
+
+    @Test
     void load_taskPathIsDirectory_actionableStorageExceptionThrown() throws IOException {
         Path taskPath = temporaryDirectory.resolve("tasks");
         Files.createDirectory(taskPath);
