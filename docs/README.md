@@ -49,6 +49,8 @@ Format: `todo DESCRIPTION`
 
 Example: `todo buy ingredients`
 
+<br>
+
 ### Adding a deadline: `deadline`
 
 Adds a task that must be completed by a date or date and time.
@@ -59,6 +61,8 @@ Examples:
 
 - `deadline submit report /by 23/9/2026`
 - `deadline submit report /by 23/9/2026 1800`
+
+<br>
 
 ### Adding an event: `event`
 
@@ -72,6 +76,8 @@ Examples:
 - `event camp /from 23/9/2026 /to 25/9/2026`
 - `event tutorial /from 23/9/2026 1400 /to 23/9/2026 1500`
 
+<br>
+
 ### Viewing all tasks: `list`
 
 Shows every task and its number. `[T]`, `[D]`, and `[E]` identify to-dos, deadlines, and events; `[X]` means the task
@@ -80,6 +86,8 @@ is done, while `[ ]` means it is not done.
 Format: `list`
 
 > **Tip:** Run `list` before using `mark`, `unmark`, or `delete`, then use the number shown in this full list.
+
+<br>
 
 ### Finding tasks: `find`
 
@@ -90,6 +98,8 @@ Format: `find KEYWORD`
 Example: `find report`
 
 The numbers in search results only number those results. Use the number from `list` when changing or deleting a task.
+
+<br>
 
 ### Sorting tasks by date: `sort`
 
@@ -105,6 +115,8 @@ Examples:
 
 The new order and task numbers are saved. Tasks added later go to the end until you sort again.
 
+<br>
+
 ### Marking tasks done or undone: `mark`, `unmark`
 
 Updates a task's completion status using its number from `list`.
@@ -116,6 +128,8 @@ Formats:
 
 Examples: `mark 2`, `unmark 2`
 
+<br>
+
 ### Deleting a task: `delete`
 
 Permanently removes a task using its number from `list`.
@@ -124,11 +138,15 @@ Format: `delete NUMBER`
 
 Example: `delete 2`
 
+<br>
+
 ### Exiting Remy: `bye`
 
 Ends the current chat. Restart Remy to begin another session.
 
 Format: `bye`
+
+<br>
 
 ## Useful notes
 
