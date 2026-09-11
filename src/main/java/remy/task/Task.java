@@ -38,6 +38,20 @@ public class Task {
     }
 
     /**
+     * Returns whether another task has the same type and identifying details.
+     *
+     * <p>Completion status is deliberately ignored because marking a task does not create a new task.</p>
+     *
+     * @param otherTask task to compare with
+     * @return true when both tasks have the same type and details
+     */
+    public boolean hasSameDetailsAs(Task otherTask) {
+        return otherTask != null
+                && getClass().equals(otherTask.getClass())
+                && description.equals(otherTask.description);
+    }
+
+    /**
      * Returns the date-time used to sort this task chronologically, if one exists.
      *
      * @return an empty value because a general task has no chronological endpoint

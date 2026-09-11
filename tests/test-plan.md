@@ -102,6 +102,113 @@ the JavaFX interaction and user-visible output.
 3. Verify the saving-error message is shown before the current in-memory sorted list.
 4. Verify the in-memory order remains sorted for the session.
 
+## Task file recovery
+
+### Scope
+
+This plan verifies that environmental storage problems do not crash Remy or silently hide lost persistence.
+Automated JUnit tests cover missing files, invalid records, non-UTF-8 content, directory/file mismatches, and failed
+writes. The manual checks focus on the recovery guidance shown in the JavaFX interface.
+
+### Manual test cases
+
+#### STORAGE-01: Missing task file
+
+1. Start Remy after moving `data/remy.txt` to a temporary backup location.
+2. Verify Remy starts with an empty task list and no error message.
+3. Add a task and verify Remy creates a new `data/remy.txt` containing that task.
+
+#### STORAGE-02: Invalid task data
+
+1. Add an invalid line between two valid task records in `data/remy.txt`.
+2. Start Remy and verify the greeting identifies the invalid line number.
+3. Enter `list` and verify both valid tasks were recovered.
+4. Change a task and verify the invalid line is removed from the saved file.
+
+#### STORAGE-03: Read access denied
+
+1. Remove read permission from a disposable task file and start Remy with that path.
+2. Verify the greeting identifies the path, explains that access was denied, and states that an empty list was used.
+3. Restore the original file permission after the test.
+
+#### STORAGE-04: Write failure
+
+1. Start Remy with a disposable task-file path whose parent is not writable.
+2. Enter a valid task-changing command.
+3. Verify Remy identifies the path, suggests checking permissions, and says the change is session-only.
+4. Enter `list` and verify the in-memory change is still present.
+
+## Task data validation
+
+### Scope
+
+This plan verifies that Remy rejects impossible dates, empty or reversed event ranges, and duplicate task details.
+Automated JUnit tests cover parsing, task invariants, task-list uniqueness, saved-file recovery, and complete command
+handling.
+
+### Manual test cases
+
+#### VALIDATION-01: Event endpoint order
+
+1. Enter an event whose start and end are the same date and time.
+2. Verify Remy explains that the event must start before it ends and does not add the event.
+3. Repeat with a start later than the end and verify the same behavior.
+4. Enter an event whose start is earlier than its end and verify it is added.
+
+#### VALIDATION-02: Duplicate task details
+
+1. Add a task, then enter the same task command again.
+2. Verify Remy explains that the task already exists and `list` contains only one copy.
+3. Mark the task as done and try to add it again; verify it is still rejected as a duplicate.
+4. Change the task type or a date endpoint and verify the distinct task can be added.
+
+#### VALIDATION-03: Non-existent dates and times
+
+1. Try to add a deadline dated `30/2/2026` and verify Remy rejects it as invalid.
+2. Try to add an event containing `29/2/2025` and verify Remy rejects it as invalid.
+3. Try a time of `24:00` and verify Remy rejects it as invalid.
+4. Add a task dated `29/2/2024` and verify the valid leap day is accepted.
+
+#### VALIDATION-04: Invalid saved values
+
+1. Add duplicate records, a non-existent date, and a reversed event to a disposable task file.
+2. Start Remy and verify the greeting reports the rejected line numbers.
+3. Enter `list` and verify only valid unique tasks were recovered.
+
+## Command format validation
+
+### Scope
+
+This plan verifies that malformed command structure produces actionable errors without executing partial commands.
+Automated JUnit tests cover whitespace, command boundaries, missing and repeated parameters, parameter order, numeric
+indices, unexpected arguments, and punctuation in free-form descriptions.
+
+### Manual test cases
+
+#### FORMAT-01: Command whitespace
+
+1. Enter a valid command with a leading space, a trailing space, or two spaces between command parts.
+2. Verify Remy asks for one space between parts and no outer spaces.
+3. Enter the correctly spaced command and verify it succeeds.
+
+#### FORMAT-02: Missing essential parameters
+
+1. Omit the description or date parameter from each task-creation command.
+2. Omit the keyword from `find` and the task number from each index command.
+3. Verify each response identifies the missing information and no command is partially executed.
+
+#### FORMAT-03: Repeated or misordered parameters
+
+1. Enter a deadline with `/by` twice and verify Remy rejects the command.
+2. Enter events with repeated `/from`, repeated `/to`, and `/to` before `/from`.
+3. Verify each response shows the expected command format and no task is added.
+
+#### FORMAT-04: Unexpected characters and arguments
+
+1. Try `mark +1`, `delete #1`, `list extra`, and a misspelled command keyword such as `todoing`.
+2. Verify each command is rejected without changing the task list.
+3. Add a task whose description contains normal punctuation and verify the description is preserved.
+
 ## Profile picture display
 
 ### Scope

@@ -54,8 +54,9 @@ class TaskListTest {
         Task task = new Todo("Read book");
         TaskList taskList = new TaskList();
 
-        taskList.add(task);
+        boolean isAdded = taskList.add(task);
 
+        assertTrue(isAdded);
         assertFalse(taskList.isEmpty());
         assertEquals(1, taskList.size());
         assertEquals(task, taskList.get(0));
@@ -66,6 +67,43 @@ class TaskListTest {
         TaskList taskList = new TaskList();
 
         assertThrows(AssertionError.class, () -> taskList.add(null));
+    }
+
+    @Test
+    void add_duplicateTaskWithDifferentStatus_taskRejectedAndOriginalRetained() {
+        Task originalTask = new Todo("Read book");
+        Task duplicateTask = new Todo("Read book");
+        duplicateTask.markAsDone();
+        TaskList taskList = new TaskList(List.of(originalTask));
+
+        boolean isAdded = taskList.add(duplicateTask);
+
+        assertFalse(isAdded);
+        assertEquals(List.of(originalTask), taskList.getTasks());
+    }
+
+    @Test
+    void add_sameDescriptionWithDifferentTaskDetails_bothTasksAdded() {
+        Task todo = new Todo("Submit report");
+        Task firstDeadline = new Deadline("Submit report", LocalDate.of(2026, 9, 8));
+        Task secondDeadline = new Deadline("Submit report", LocalDate.of(2026, 9, 9));
+        TaskList taskList = new TaskList(List.of(todo));
+
+        boolean isFirstDeadlineAdded = taskList.add(firstDeadline);
+        boolean isSecondDeadlineAdded = taskList.add(secondDeadline);
+
+        assertTrue(isFirstDeadlineAdded);
+        assertTrue(isSecondDeadlineAdded);
+        assertEquals(List.of(todo, firstDeadline, secondDeadline), taskList.getTasks());
+    }
+
+    @Test
+    void constructor_duplicateTasks_illegalArgumentExceptionThrown() {
+        Task firstTask = new Todo("Read book");
+        Task duplicateTask = new Todo("Read book");
+        List<Task> duplicateTasks = List.of(firstTask, duplicateTask);
+
+        assertThrows(IllegalArgumentException.class, () -> new TaskList(duplicateTasks));
     }
 
     /**

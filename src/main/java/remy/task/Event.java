@@ -3,6 +3,8 @@ package remy.task;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -12,11 +14,11 @@ public class Event extends Task {
 
     /** Format used when displaying date-only event endpoints. */
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd yyyy");
+            DateTimeFormatter.ofPattern("MMM dd uuuu", Locale.ENGLISH);
 
     /** Format used when displaying event endpoints that include a time. */
     private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMATTER =
-        DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
+            DateTimeFormatter.ofPattern("MMM dd uuuu HH:mm", Locale.ENGLISH);
 
     /** Date-only start endpoint, when the event has no times. */
     private final LocalDate startDate;
@@ -36,6 +38,7 @@ public class Event extends Task {
      * @param description Description supplied by the user.
      * @param startDate Date on which the event starts.
      * @param endDate Date on which the event ends.
+     * @throws IllegalArgumentException if the event does not start before it ends
      */
     public Event(String description, LocalDate startDate, LocalDate endDate) {
         this(description, startDate, endDate, null, null);
@@ -47,6 +50,7 @@ public class Event extends Task {
      * @param description Description supplied by the user.
      * @param startDateTime Date and time at which the event starts.
      * @param endDateTime Date and time at which the event ends.
+     * @throws IllegalArgumentException if the event does not start before it ends
      */
     public Event(String description, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         this(description, null, null, startDateTime, endDateTime);
@@ -60,6 +64,7 @@ public class Event extends Task {
      * @param endDate Date on which the event ends, if known.
      * @param startDateTime Date and time at which the event starts, if known.
      * @param endDateTime Date and time at which the event ends, if known.
+     * @throws IllegalArgumentException if the event does not start before it ends
      */
     public Event(String description, LocalDate startDate, LocalDate endDate,
             LocalDateTime startDateTime, LocalDateTime endDateTime) {
@@ -70,11 +75,34 @@ public class Event extends Task {
                 && startDateTime != null && endDateTime != null;
         assert hasDateEndpoints || hasDateTimeEndpoints
                 : "Event must have exactly one complete endpoint representation";
+        boolean hasInvalidDateRange = hasDateEndpoints && !startDate.isBefore(endDate);
+        boolean hasInvalidDateTimeRange = hasDateTimeEndpoints && !startDateTime.isBefore(endDateTime);
+        if (hasInvalidDateRange || hasInvalidDateTimeRange) {
+            throw new IllegalArgumentException("Event start must be before its end");
+        }
 
         this.startDate = startDate;
         this.endDate = endDate;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
+    }
+
+    /**
+     * Returns whether another task is an event with the same description and endpoints.
+     *
+     * @param otherTask task to compare with
+     * @return true when both events have the same identifying details
+     */
+    @Override
+    public boolean hasSameDetailsAs(Task otherTask) {
+        if (!(otherTask instanceof Event otherEvent)) {
+            return false;
+        }
+        return super.hasSameDetailsAs(otherEvent)
+                && Objects.equals(startDate, otherEvent.startDate)
+                && Objects.equals(startDateTime, otherEvent.startDateTime)
+                && Objects.equals(endDate, otherEvent.endDate)
+                && Objects.equals(endDateTime, otherEvent.endDateTime);
     }
 
     /**

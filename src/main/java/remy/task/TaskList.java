@@ -24,24 +24,37 @@ public class TaskList {
      * Creates a task list containing the given tasks.
      *
      * @param tasks tasks to add to this list
+     * @throws IllegalArgumentException if the collection contains tasks with duplicate details
      */
     public TaskList(List<Task> tasks) {
         assert tasks != null : "Initial task collection must not be null";
         assert tasks.stream().noneMatch(task -> task == null)
                 : "Initial task collection must not contain null";
 
-        this.tasks = new ArrayList<>(tasks);
+        this.tasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (!add(task)) {
+                throw new IllegalArgumentException("Initial task collection contains duplicate task details");
+            }
+        }
     }
 
     /**
-     * Adds a task to the end of this list.
+     * Adds a task to the end of this list unless a task with the same details already exists.
      *
      * @param task task to add
+     * @return true when the task was added, or false when it duplicates an existing task
      */
-    public void add(Task task) {
+    public boolean add(Task task) {
         assert task != null : "Task to add must not be null";
 
+        boolean hasDuplicate = tasks.stream().anyMatch(existingTask -> existingTask.hasSameDetailsAs(task));
+        if (hasDuplicate) {
+            return false;
+        }
+
         tasks.add(task);
+        return true;
     }
 
     /**
