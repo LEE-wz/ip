@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -61,10 +62,15 @@ class StorageTest {
     void saveAndLoad_tasksOfAllTypes_tasksAndCompletionStatusPreserved() throws IOException {
         Task todo = new Todo("Read book");
         todo.markAsDone();
-        Task deadline = new Deadline("Submit assignment", LocalDate.of(2026, 8, 23));
-        Task event = new Event("Project meeting", LocalDateTime.of(2026, 8, 24, 14, 30),
+        Task dateDeadline = new Deadline("Submit assignment", LocalDate.of(2026, 8, 23));
+        Task dateTimeDeadline = new Deadline("Pay fees", LocalDateTime.of(2026, 8, 23, 18, 0));
+        Task dateEvent = new Event("Project period", LocalDate.of(2026, 8, 24),
+                LocalDate.of(2026, 8, 25));
+        Task dateTimeEvent = new Event("Project meeting", LocalDateTime.of(2026, 8, 24, 14, 30),
                 LocalDateTime.of(2026, 8, 24, 16, 0));
-        TaskList tasks = new TaskList(List.of(todo, deadline, event));
+        dateTimeEvent.markAsDone();
+        TaskList tasks = new TaskList(List.of(
+                todo, dateDeadline, dateTimeDeadline, dateEvent, dateTimeEvent));
         Path taskFile = temporaryDirectory.resolve("data").resolve("tasks.txt");
         Storage storage = new Storage(taskFile.toString());
 
@@ -74,6 +80,13 @@ class StorageTest {
         assertTrue(Files.exists(taskFile));
         assertEquals(tasks.getTasks().stream().map(Task::toString).toList(),
                 loadedTasks.getTasks().stream().map(Task::toString).toList());
+    }
+
+    @Test
+    void save_nullTaskList_assertionErrorThrown() {
+        Storage storage = new Storage(temporaryDirectory.resolve("tasks.txt").toString());
+
+        assertThrows(AssertionError.class, () -> storage.save(null));
     }
 
     /**
@@ -114,6 +127,32 @@ class StorageTest {
         assertEquals(List.of("[T][X] Read book"),
                 loadResult.getTasks().getTasks().stream().map(Task::toString).toList());
         assertEquals(List.of(2, 3, 4, 5), loadResult.getInvalidLineNumbers());
+    }
+
+    @Test
+    void load_taskFileContainsMalformedTaskDetails_allLinesRejected() throws IOException {
+        Path taskFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(taskFile, String.join(System.lineSeparator(),
+                "[D][ ] Report (by: Sep 24 2026",
+                "[D][ ] Report by Sep 24 2026)",
+                "[D][ ]  (by: Sep 24 2026)",
+                "[D][ ] Report (by: )",
+                "[D][ ] Report (by: Sep 31 2026)",
+                "[E][ ] Meeting (from: Sep 24 2026 to: Sep 25 2026",
+                "[E][ ] Meeting from Sep 24 2026 to: Sep 25 2026)",
+                "[E][ ] Meeting (from: Sep 24 2026 until Sep 25 2026)",
+                "[E][ ] Meeting to: Sep 25 2026 (from: Sep 24 2026)",
+                "[E][ ]  (from: Sep 24 2026 to: Sep 25 2026)",
+                "[E][ ] Meeting (from:  to: Sep 25 2026)",
+                "[E][ ] Meeting (from: Sep 24 2026 to: )",
+                "[E][ ] Meeting (from: Sep 24 2026 1200 to: Sep 25 2026)"));
+        Storage storage = new Storage(taskFile.toString());
+
+        StorageLoadResult loadResult = storage.loadWithRecoveryDetails();
+
+        assertTrue(loadResult.getTasks().isEmpty());
+        assertEquals(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13),
+                loadResult.getInvalidLineNumbers());
     }
 
     @Test
@@ -192,6 +231,21 @@ class StorageTest {
 
         assertTrue(exception.getMessage().contains(taskFile.toString()));
         assertTrue(exception.getMessage().contains("kept only for this session"));
+    }
+
+    @Test
+    void save_taskPathIsDirectory_temporaryFileRemovedAndActionableExceptionThrown() throws IOException {
+        Path taskPath = Files.createDirectory(temporaryDirectory.resolve("tasks.txt"));
+        Storage storage = new Storage(taskPath.toString());
+        TaskList tasks = new TaskList(List.of(new Todo("Read book")));
+
+        StorageException exception = assertThrows(StorageException.class, () -> storage.save(tasks));
+
+        assertTrue(exception.getMessage().contains(taskPath.toString()));
+        assertTrue(exception.getMessage().contains("kept only for this session"));
+        try (Stream<Path> files = Files.list(temporaryDirectory)) {
+            assertEquals(List.of(taskPath), files.toList());
+        }
     }
 
     @Test

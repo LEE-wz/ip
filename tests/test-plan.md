@@ -209,6 +209,50 @@ indices, unexpected arguments, and punctuation in free-form descriptions.
 2. Verify each command is rejected without changing the task list.
 3. Add a task whose description contains normal punctuation and verify the description is preserved.
 
+## Coverage and platform compatibility
+
+### Scope
+
+The automated suite covers testable command, parser, storage, task, console UI, and application behavior. JaCoCo
+generates an HTML report at `build/reports/jacoco/test/html/index.html` and makes `check` fail below 95% line coverage
+or 90% branch coverage. JavaFX classes are excluded from those thresholds because their FXML lifecycle, native
+toolkit, focus behavior, and rendered layout require a graphical environment. Their pure viewport calculation remains
+covered by `DialogBoxTest`.
+
+### Manual test matrix
+
+#### COMPAT-01: Supported desktop operating systems
+
+1. On Windows 11, macOS, and Ubuntu, install Java 25 and build the application with `./gradlew clean shadowJar`.
+2. Start the packaged JAR, add each task type, mark and unmark a task, sort and find tasks, then exit.
+3. Restart the application and verify all changes and completion states were preserved.
+4. Verify startup, task-file paths, and line endings do not produce platform-specific errors.
+
+#### COMPAT-02: Window size and display scaling
+
+1. Test at 1280x720, 1920x1080, and 2560x1440, including 100%, 150%, and 200% display scaling where available.
+2. Resize the window to its minimum dimensions and then maximize it.
+3. Enter short and long commands until the conversation scrolls beyond one screen.
+4. Verify controls remain reachable, text and images are not clipped, messages wrap correctly, and scrolling follows
+   the latest response.
+
+#### COMPAT-03: OS language, locale, and Unicode text
+
+1. Run the application with the OS language and regional format set to English, then Chinese.
+2. Add tasks with Chinese descriptions, punctuation, and valid numeric and English-text dates.
+3. Restart the application and verify the UTF-8 descriptions are preserved exactly.
+4. Verify command keywords remain consistent and displayed dates remain unambiguous regardless of the OS locale.
+5. Enter a command containing a full-width or non-breaking space and verify Remy rejects the unsupported spacing with
+   actionable guidance rather than executing a partial command.
+
+#### COMPAT-04: JavaFX interaction and lifecycle
+
+1. Launch the application, verify the input field receives focus, and send commands with both Enter and the button.
+2. Enter a blank message and verify no empty user bubble is added while Remy displays an error response.
+3. Enter `bye` and verify the input is disabled, its prompt changes to `Chat ended`, and existing messages remain
+   scrollable.
+4. Close and reopen the window repeatedly and verify no native-toolkit or shutdown error is shown.
+
 ## Profile picture display
 
 ### Scope
