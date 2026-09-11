@@ -175,6 +175,40 @@ handling.
 2. Start Remy and verify the greeting reports the rejected line numbers.
 3. Enter `list` and verify only valid unique tasks were recovered.
 
+## Command format validation
+
+### Scope
+
+This plan verifies that malformed command structure produces actionable errors without executing partial commands.
+Automated JUnit tests cover whitespace, command boundaries, missing and repeated parameters, parameter order, numeric
+indices, unexpected arguments, and punctuation in free-form descriptions.
+
+### Manual test cases
+
+#### FORMAT-01: Command whitespace
+
+1. Enter a valid command with a leading space, a trailing space, or two spaces between command parts.
+2. Verify Remy asks for one space between parts and no outer spaces.
+3. Enter the correctly spaced command and verify it succeeds.
+
+#### FORMAT-02: Missing essential parameters
+
+1. Omit the description or date parameter from each task-creation command.
+2. Omit the keyword from `find` and the task number from each index command.
+3. Verify each response identifies the missing information and no command is partially executed.
+
+#### FORMAT-03: Repeated or misordered parameters
+
+1. Enter a deadline with `/by` twice and verify Remy rejects the command.
+2. Enter events with repeated `/from`, repeated `/to`, and `/to` before `/from`.
+3. Verify each response shows the expected command format and no task is added.
+
+#### FORMAT-04: Unexpected characters and arguments
+
+1. Try `mark +1`, `delete #1`, `list extra`, and a misspelled command keyword such as `todoing`.
+2. Verify each command is rejected without changing the task list.
+3. Add a task whose description contains normal punctuation and verify the description is preserved.
+
 ## Profile picture display
 
 ### Scope

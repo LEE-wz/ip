@@ -32,6 +32,10 @@ Dates can use formats such as `23/9/2026`, `2026-09-23`, or `23 Sep 2026`. Add a
 `18:00` when needed. Dates and times must exist: values such as `30/2/2026` and `24:00` are rejected. An event's
 start must be earlier than its end.
 
+Commands use one space between each part and cannot have leading or trailing spaces. Parameters such as `/by`,
+`/from`, `/to`, and `/order` must appear only in their documented positions and cannot be repeated. Task numbers for
+`mark`, `unmark`, and `delete` contain digits only. Task descriptions remain free-form and may contain punctuation.
+
 Tasks must be unique by type, description, and date endpoints. For example, the same deadline cannot be added twice,
 even if the first copy has since been marked as done. Tasks with the same description but a different type or date are
 still allowed.
