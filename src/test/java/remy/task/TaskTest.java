@@ -68,6 +68,7 @@ class TaskTest {
         assertTrue(firstTodo.hasSameDetailsAs(completedTodo));
         assertFalse(firstTodo.hasSameDetailsAs(differentTodo));
         assertFalse(firstTodo.hasSameDetailsAs(deadline));
+        assertFalse(firstTodo.hasSameDetailsAs(null));
     }
 
     @Test
@@ -83,5 +84,27 @@ class TaskTest {
         assertFalse(firstDeadline.hasSameDetailsAs(differentDeadline));
         assertTrue(firstEvent.hasSameDetailsAs(sameEvent));
         assertFalse(firstEvent.hasSameDetailsAs(differentEvent));
+    }
+
+    @Test
+    void hasSameDetailsAs_dateTimeEndpointsAndDifferentTypes_expectedResultsReturned() {
+        LocalDateTime firstDateTime = LocalDateTime.of(2026, 9, 8, 18, 0);
+        LocalDateTime secondDateTime = LocalDateTime.of(2026, 9, 8, 19, 0);
+        Task firstDeadline = new Deadline("Submit report", firstDateTime);
+        Task sameDeadline = new Deadline("Submit report", firstDateTime);
+        Task differentDeadline = new Deadline("Submit report", secondDateTime);
+        Task firstEvent = new Event("Conference", firstDateTime, secondDateTime);
+        Task sameEvent = new Event("Conference", firstDateTime, secondDateTime);
+        Task differentStartEvent = new Event("Conference", firstDateTime.minusHours(1), secondDateTime);
+        Task differentEndEvent = new Event("Conference", firstDateTime, secondDateTime.plusHours(1));
+        Task todo = new Todo("Conference");
+
+        assertTrue(firstDeadline.hasSameDetailsAs(sameDeadline));
+        assertFalse(firstDeadline.hasSameDetailsAs(differentDeadline));
+        assertFalse(firstDeadline.hasSameDetailsAs(todo));
+        assertTrue(firstEvent.hasSameDetailsAs(sameEvent));
+        assertFalse(firstEvent.hasSameDetailsAs(differentStartEvent));
+        assertFalse(firstEvent.hasSameDetailsAs(differentEndEvent));
+        assertFalse(firstEvent.hasSameDetailsAs(todo));
     }
 }

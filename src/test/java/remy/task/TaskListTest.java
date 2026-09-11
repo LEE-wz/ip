@@ -30,6 +30,19 @@ class TaskListTest {
         assertEquals(0, taskList.size());
     }
 
+    @Test
+    void constructor_nullInitialTasks_assertionErrorThrown() {
+        assertThrows(AssertionError.class, () -> new TaskList(null));
+    }
+
+    @Test
+    void constructor_initialTasksContainNull_assertionErrorThrown() {
+        List<Task> initialTasks = new java.util.ArrayList<>();
+        initialTasks.add(null);
+
+        assertThrows(AssertionError.class, () -> new TaskList(initialTasks));
+    }
+
     /**
      * Tests that the constructor copies the supplied task list and is unaffected by
      * later changes to the source list.
@@ -174,6 +187,13 @@ class TaskListTest {
         TaskList taskList = new TaskList(List.of(new Todo("Read book")));
 
         assertThrows(AssertionError.class, () -> taskList.find("   "));
+    }
+
+    @Test
+    void find_nullKeyword_assertionErrorThrown() {
+        TaskList taskList = new TaskList(List.of(new Todo("Read book")));
+
+        assertThrows(AssertionError.class, () -> taskList.find(null));
     }
 
     @Test
