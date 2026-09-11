@@ -4,7 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -37,9 +42,35 @@ class RemyTest {
 
         String unknownCommandResponse = remy.getResponse("cook dinner");
         String blankCommandResponse = remy.getResponse("   ");
+        String nullCommandResponse = remy.getResponse(null);
 
         assertTrue(unknownCommandResponse.contains("no clue what you're talking about"));
         assertTrue(blankCommandResponse.contains("Please type a command"));
+        assertTrue(nullCommandResponse.contains("Please type a command"));
+    }
+
+    @Test
+    void main_unknownCommandThenBye_errorHandledAndCommandLoopEnds() {
+        InputStream originalStandardIn = System.in;
+        PrintStream originalStandardOut = System.out;
+        ByteArrayInputStream input = new ByteArrayInputStream("cook dinner\nbye\n"
+                .getBytes(StandardCharsets.UTF_8));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        try {
+            System.setIn(input);
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+
+            Remy.main(new String[0]);
+        } finally {
+            System.setIn(originalStandardIn);
+            System.setOut(originalStandardOut);
+        }
+
+        String response = output.toString(StandardCharsets.UTF_8);
+        assertTrue(response.contains("Yo! I am Remy the rat from Ratatouille."));
+        assertTrue(response.contains("no clue what you're talking about"));
+        assertTrue(response.contains("Cya. Call me again when you need me!"));
     }
 
     @Test
@@ -49,6 +80,27 @@ class RemyTest {
         String response = remy.getResponse("list");
 
         assertTrue(response.contains("There are no tasks in your list yet."));
+        assertFalse(remy.getGreeting().contains("Skipped invalid saved task data"));
+    }
+
+    @Test
+    void getResponse_invalidTaskIndices_errorsReturnedAndTasksRetained() {
+        Remy remy = createRemy();
+
+        String emptyDeleteResponse = remy.getResponse("delete 1");
+        remy.getResponse("todo prepare ingredients");
+        String zeroMarkResponse = remy.getResponse("mark 0");
+        String largeMarkResponse = remy.getResponse("mark 2");
+        String zeroDeleteResponse = remy.getResponse("delete 0");
+        String largeDeleteResponse = remy.getResponse("delete 2");
+        String listResponse = remy.getResponse("list");
+
+        assertTrue(emptyDeleteResponse.contains("no task for you to delete"));
+        assertTrue(zeroMarkResponse.contains("index is out of range"));
+        assertTrue(largeMarkResponse.contains("index is out of range"));
+        assertTrue(zeroDeleteResponse.contains("index is out of range"));
+        assertTrue(largeDeleteResponse.contains("index is out of range"));
+        assertTrue(listResponse.contains("1. [T][ ] prepare ingredients"));
     }
 
     @Test
