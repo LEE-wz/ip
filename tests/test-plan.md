@@ -138,6 +138,43 @@ writes. The manual checks focus on the recovery guidance shown in the JavaFX int
 3. Verify Remy identifies the path, suggests checking permissions, and says the change is session-only.
 4. Enter `list` and verify the in-memory change is still present.
 
+## Task data validation
+
+### Scope
+
+This plan verifies that Remy rejects impossible dates, empty or reversed event ranges, and duplicate task details.
+Automated JUnit tests cover parsing, task invariants, task-list uniqueness, saved-file recovery, and complete command
+handling.
+
+### Manual test cases
+
+#### VALIDATION-01: Event endpoint order
+
+1. Enter an event whose start and end are the same date and time.
+2. Verify Remy explains that the event must start before it ends and does not add the event.
+3. Repeat with a start later than the end and verify the same behavior.
+4. Enter an event whose start is earlier than its end and verify it is added.
+
+#### VALIDATION-02: Duplicate task details
+
+1. Add a task, then enter the same task command again.
+2. Verify Remy explains that the task already exists and `list` contains only one copy.
+3. Mark the task as done and try to add it again; verify it is still rejected as a duplicate.
+4. Change the task type or a date endpoint and verify the distinct task can be added.
+
+#### VALIDATION-03: Non-existent dates and times
+
+1. Try to add a deadline dated `30/2/2026` and verify Remy rejects it as invalid.
+2. Try to add an event containing `29/2/2025` and verify Remy rejects it as invalid.
+3. Try a time of `24:00` and verify Remy rejects it as invalid.
+4. Add a task dated `29/2/2024` and verify the valid leap day is accepted.
+
+#### VALIDATION-04: Invalid saved values
+
+1. Add duplicate records, a non-existent date, and a reversed event to a disposable task file.
+2. Start Remy and verify the greeting reports the rejected line numbers.
+3. Enter `list` and verify only valid unique tasks were recovered.
+
 ## Profile picture display
 
 ### Scope

@@ -29,7 +29,12 @@ On Windows, use `gradlew.bat run` instead. Enter a command in the field at the b
 | End the chat | `bye` | `bye` |
 
 Dates can use formats such as `23/9/2026`, `2026-09-23`, or `23 Sep 2026`. Add a 24-hour time such as `1800` or
-`18:00` when needed.
+`18:00` when needed. Dates and times must exist: values such as `30/2/2026` and `24:00` are rejected. An event's
+start must be earlier than its end.
+
+Tasks must be unique by type, description, and date endpoints. For example, the same deadline cannot be added twice,
+even if the first copy has since been marked as done. Tasks with the same description but a different type or date are
+still allowed.
 
 Sorting uses each deadline's due endpoint and each event's start endpoint. Todos remain after all dated tasks.
 Ascending order is used when `/order` is omitted. Sorting changes the saved task order and task numbers, but it is not
@@ -38,8 +43,9 @@ applied automatically to tasks added later.
 ## Task file recovery
 
 Remy stores tasks as UTF-8 text in `data/remy.txt`. A missing task file is treated as a first run and is created when a
-task-changing command is next saved. If individual lines contain invalid task data, Remy loads the valid lines and
-reports the invalid line numbers; those invalid lines are removed on the next successful save.
+task-changing command is next saved. If individual lines contain invalid task data or duplicate another saved task,
+Remy loads the valid unique lines and reports the rejected line numbers; those rejected lines are removed on the next
+successful save.
 
 If the configured path cannot be read or written, Remy reports the affected path and a likely remedy instead of
 crashing. Changes that cannot be saved remain available in the current session but will not survive a restart.
